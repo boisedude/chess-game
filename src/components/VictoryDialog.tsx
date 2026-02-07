@@ -179,14 +179,14 @@ function VictoryDialogComponent({
           <div className="flex items-center justify-center gap-6 py-4">
             {winner === 1 ? (
               <div className="relative">
-                <div className="h-24 w-24 rounded-full bg-gradient-to-br from-gray-100 to-white ring-4 ring-yellow-400 animate-pulse flex items-center justify-center shadow-lg">
+                <div className="h-24 w-24 rounded-full bg-gradient-to-br from-gray-100 to-white ring-4 ring-yellow-400 animate-pulse motion-reduce:animate-none flex items-center justify-center shadow-lg">
                   <span className="text-5xl">&#9812;</span>
                 </div>
                 <span className="absolute -top-3 -right-2 text-3xl">&#128081;</span>
               </div>
             ) : winner === 2 ? (
               <div className="relative">
-                <div className="h-24 w-24 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 ring-4 ring-yellow-400 animate-pulse flex items-center justify-center shadow-lg">
+                <div className="h-24 w-24 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 ring-4 ring-yellow-400 animate-pulse motion-reduce:animate-none flex items-center justify-center shadow-lg">
                   <span className="text-5xl">&#9818;</span>
                 </div>
                 <span className="absolute -top-3 -right-2 text-3xl">&#128081;</span>

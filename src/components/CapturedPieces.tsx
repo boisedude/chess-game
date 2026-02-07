@@ -81,10 +81,10 @@ function CapturedPiecesComponent({ moveHistory, isPvP, characterName }: Captured
     <div className="w-full max-w-md rounded-lg bg-white p-2 sm:p-3 shadow-lg">
       {/* Material advantage bar */}
       <div className="mb-2 flex items-center gap-2">
-        <span className="text-[10px] sm:text-xs text-gray-500 w-6 text-right">
+        <span className="text-xs text-gray-500 w-6 text-right">
           {advantage > 0 ? `+${advantage}` : ''}
         </span>
-        <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+        <div className="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden" role="meter" aria-label={`Material advantage: ${advantage > 0 ? `White +${advantage}` : advantage < 0 ? `Black +${-advantage}` : 'Even'}`} aria-valuenow={advantage} aria-valuemin={-39} aria-valuemax={39}>
           <div
             className="h-full rounded-full transition-all duration-300"
             style={{
@@ -95,7 +95,7 @@ function CapturedPiecesComponent({ moveHistory, isPvP, characterName }: Captured
             }}
           />
         </div>
-        <span className="text-[10px] sm:text-xs text-gray-500 w-6">
+        <span className="text-xs text-gray-500 w-6">
           {advantage < 0 ? `+${-advantage}` : ''}
         </span>
       </div>
@@ -103,25 +103,25 @@ function CapturedPiecesComponent({ moveHistory, isPvP, characterName }: Captured
       {/* Captured pieces rows */}
       <div className="flex flex-col gap-0.5">
         <div className="flex items-center gap-1.5 min-h-[24px]">
-          <span className="text-[10px] sm:text-xs text-gray-400 w-20 sm:w-24 truncate">{whiteLabel}</span>
+          <span className="text-xs text-gray-400 w-20 sm:w-24 truncate">{whiteLabel}</span>
           <div className="flex flex-wrap gap-0 text-base sm:text-lg opacity-80">
             {sortedByWhite.map((piece, i) => (
               <span key={i} className="leading-none">{BLACK_SYMBOLS[piece]}</span>
             ))}
           </div>
           {advantage > 0 && sortedByWhite.length > 0 && (
-            <span className="text-[10px] sm:text-xs font-semibold text-gray-600 ml-1">+{advantage}</span>
+            <span className="text-xs font-semibold text-gray-600 ml-1">+{advantage}</span>
           )}
         </div>
         <div className="flex items-center gap-1.5 min-h-[24px]">
-          <span className="text-[10px] sm:text-xs text-gray-400 w-20 sm:w-24 truncate">{blackLabel}</span>
+          <span className="text-xs text-gray-400 w-20 sm:w-24 truncate">{blackLabel}</span>
           <div className="flex flex-wrap gap-0 text-base sm:text-lg opacity-80">
             {sortedByBlack.map((piece, i) => (
               <span key={i} className="leading-none">{WHITE_SYMBOLS[piece]}</span>
             ))}
           </div>
           {advantage < 0 && sortedByBlack.length > 0 && (
-            <span className="text-[10px] sm:text-xs font-semibold text-gray-600 ml-1">+{-advantage}</span>
+            <span className="text-xs font-semibold text-gray-600 ml-1">+{-advantage}</span>
           )}
         </div>
       </div>

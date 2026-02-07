@@ -141,7 +141,7 @@ export function Confetti({ active = true, particleCount = 50 }: ConfettiProps) {
   if (!active) return null
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
+    <div className="pointer-events-none fixed inset-0 z-40 overflow-hidden" aria-hidden="true">
       {particles.map(particle => (
         <div
           key={particle.id}

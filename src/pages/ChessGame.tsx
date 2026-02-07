@@ -369,15 +369,14 @@ export function ChessGame() {
         </div>
 
         {/* Return to Arcade Button */}
-        <div className="w-full max-w-lg mb-3 sm:mb-4 px-4">
-          <a href="https://www.mcooper.com/arcade/" className="block">
-            <Button
-              variant="outline"
-              className="w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base font-semibold border-2 hover:bg-gray-100 hover:border-gray-400"
-            >
-              ← Return to Arcade
-            </Button>
-          </a>
+        <div className="w-full max-w-2xl mb-3 sm:mb-4 px-4">
+          <Button
+            asChild
+            variant="outline"
+            className="w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base font-semibold border-2 hover:bg-gray-100 hover:border-gray-400"
+          >
+            <a href="https://www.mcooper.com/arcade/">← Return to Arcade</a>
+          </Button>
         </div>
 
         <WelcomeScreen
@@ -407,19 +406,18 @@ export function ChessGame() {
 
       {/* Return to Arcade Button */}
       <div className="w-full max-w-2xl mb-3 sm:mb-4">
-        <a href="https://www.mcooper.com/arcade/" className="block">
-          <Button
-            variant="outline"
-            className="w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base font-semibold border-2 hover:bg-gray-100 hover:border-gray-400"
-          >
-            ← Return to Arcade
-          </Button>
-        </a>
+        <Button
+          asChild
+          variant="outline"
+          className="w-full sm:w-auto h-10 sm:h-11 text-sm sm:text-base font-semibold border-2 hover:bg-gray-100 hover:border-gray-400"
+        >
+          <a href="https://www.mcooper.com/arcade/">← Return to Arcade</a>
+        </Button>
       </div>
 
       {/* Character Info (PvC only) */}
       {!isPvP && (
-        <div className="mb-3 sm:mb-6 flex items-center gap-3 sm:gap-4 rounded-lg bg-white p-3 sm:p-4 shadow-lg w-full max-w-md" role="region" aria-label="Current opponent">
+        <div className="mb-3 sm:mb-6 flex items-center gap-3 sm:gap-4 rounded-lg bg-white p-3 sm:p-4 shadow-lg w-full max-w-lg" role="region" aria-label="Current opponent">
           <img
             src={character.avatar}
             alt={`${character.name} avatar`}
@@ -435,7 +433,7 @@ export function ChessGame() {
       )}
 
       {/* Game Info */}
-      <div className="mb-3 sm:mb-6 flex gap-4 sm:gap-8 rounded-lg bg-white p-3 sm:p-4 shadow-lg w-full max-w-md" role="region" aria-label="Piece count">
+      <div className="mb-3 sm:mb-6 flex gap-4 sm:gap-8 rounded-lg bg-white p-3 sm:p-4 shadow-lg w-full max-w-lg" role="region" aria-label="Piece count">
         <div className="text-center flex-1">
           <div className="text-xl sm:text-2xl font-bold text-gray-800">{gameState.whiteCount}</div>
           <div className="text-xs sm:text-sm text-gray-600">{isPvP ? 'White' : 'Your Pieces'}</div>
@@ -450,19 +448,18 @@ export function ChessGame() {
       </div>
 
       {/* Captured Pieces */}
-      {gameState.moveHistory.length > 0 && (
-        <div className="mb-3 sm:mb-4">
-          <CapturedPieces
-            moveHistory={gameState.moveHistory}
-            isPvP={isPvP}
-            characterName={character.name}
-          />
-        </div>
-      )}
+      <div className="mb-3 sm:mb-4 min-h-[68px]">
+        <CapturedPieces
+          moveHistory={gameState.moveHistory}
+          isPvP={isPvP}
+          characterName={character.name}
+        />
+      </div>
 
       {/* Turn indicator */}
       <div className="mb-3 sm:mb-4 text-center" role="status" aria-live="polite">
-        <p className="text-base sm:text-lg font-semibold text-gray-700">
+        <p className="text-base sm:text-lg font-semibold text-gray-700 flex items-center justify-center gap-2">
+          <span className="text-xl" aria-hidden="true">{gameState.currentPlayer === 1 ? '\u2654' : '\u265A'}</span>
           {isPvP
             ? gameState.currentPlayer === 1
               ? "White's Turn"
@@ -473,11 +470,13 @@ export function ChessGame() {
           }
         </p>
         {gameState.isInCheck && gameState.status === 'playing' && (
-          <p className="text-sm text-red-600 font-bold animate-pulse">Check!</p>
+          <p className="text-sm text-red-600 font-bold animate-pulse motion-reduce:animate-none flex items-center justify-center gap-1">
+            <span aria-hidden="true">&#9888;</span> Check!
+          </p>
         )}
         {!isPvP && gameState.currentPlayer === 2 && gameState.status === 'playing' && (
           <div className="flex items-center justify-center gap-2 mt-1">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-400 border-t-gray-800" />
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-400 border-t-gray-800" aria-hidden="true" />
             <span className="text-sm text-gray-600">{character.name} is thinking...</span>
           </div>
         )}
@@ -542,7 +541,7 @@ export function ChessGame() {
           winner={gameState.winner}
           character={character}
           onPlayAgain={handleNewGame}
-          onClose={() => setVictoryDialogDismissed(true)}
+          onClose={() => { setVictoryDialogDismissed(true); setShowConfetti(false) }}
           whiteCount={gameState.whiteCount}
           blackCount={gameState.blackCount}
           gameMode={gameState.mode}

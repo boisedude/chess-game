@@ -69,8 +69,8 @@ export const GameControls = React.memo(function GameControls({
           </div>
         )}
 
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Button onClick={onNewGame} disabled={disabled} variant="default" className="flex-1 sm:flex-none h-10 sm:h-auto text-sm sm:text-base">
+        <div className="flex flex-wrap justify-center gap-2 w-full sm:w-auto">
+          <Button onClick={onNewGame} disabled={disabled} variant="default" className="min-w-[5.5rem] sm:min-w-0 h-10 sm:h-auto text-sm sm:text-base">
             New Game
           </Button>
 
@@ -79,7 +79,7 @@ export const GameControls = React.memo(function GameControls({
               onClick={onUndo}
               disabled={disabled || !canUndo}
               variant="outline"
-              className="flex-1 sm:flex-none h-10 sm:h-auto text-sm sm:text-base gap-1"
+              className="min-w-[5.5rem] sm:min-w-0 h-10 sm:h-auto text-sm sm:text-base gap-1"
               aria-label="Undo last move (U)"
               title="Undo (U)"
             >
@@ -93,7 +93,7 @@ export const GameControls = React.memo(function GameControls({
               onClick={onResign}
               disabled={disabled}
               variant="outline"
-              className="flex-1 sm:flex-none h-10 sm:h-auto text-sm sm:text-base text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
+              className="min-w-[5.5rem] sm:min-w-0 h-10 sm:h-auto text-sm sm:text-base text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
               aria-label="Resign"
             >
               Resign
@@ -105,19 +105,19 @@ export const GameControls = React.memo(function GameControls({
               onClick={onOfferDraw}
               disabled={disabled}
               variant="outline"
-              className="flex-1 sm:flex-none h-10 sm:h-auto text-sm sm:text-base"
+              className="min-w-[5.5rem] sm:min-w-0 h-10 sm:h-auto text-sm sm:text-base"
               aria-label="Offer draw"
             >
               Draw
             </Button>
           )}
 
-          <Button onClick={onShowLeaderboard} disabled={disabled} variant="outline" className="flex-1 sm:flex-none h-10 sm:h-auto text-sm sm:text-base">
+          <Button onClick={onShowLeaderboard} disabled={disabled} variant="outline" className="min-w-[5.5rem] sm:min-w-0 h-10 sm:h-auto text-sm sm:text-base">
             Stats
           </Button>
 
           {onShowHelp && (
-            <Button onClick={onShowHelp} disabled={disabled} variant="outline" className="flex-1 sm:flex-none h-10 sm:h-auto text-sm sm:text-base">
+            <Button onClick={onShowHelp} disabled={disabled} variant="outline" className="min-w-[5.5rem] sm:min-w-0 h-10 sm:h-auto text-sm sm:text-base">
               Help
             </Button>
           )}

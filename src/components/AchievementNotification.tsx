@@ -50,7 +50,7 @@ export const AchievementNotification = React.memo(
 
     return (
       <div
-        className={`fixed left-1/2 top-4 z-[100] -translate-x-1/2 transition-all duration-300 ease-out ${
+        className={`fixed left-1/2 top-4 z-[60] -translate-x-1/2 transition-all duration-300 ease-out ${
           visible
             ? 'translate-y-0 opacity-100'
             : '-translate-y-full opacity-0'

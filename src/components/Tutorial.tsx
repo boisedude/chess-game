@@ -6,7 +6,7 @@
  * onComplete marks tutorial as done in localStorage to prevent re-showing.
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -101,7 +101,7 @@ const tutorialSteps: TutorialStep[] = [
     tip: 'Knights are the only pieces that can jump over others!',
     image: (
       <div className="flex justify-center py-4">
-        <svg width="200" height="160" viewBox="0 0 200 160">
+        <svg width="200" height="160" viewBox="0 0 200 160" role="img" aria-label="Knight on a mini board showing L-shaped movement destinations">
           {/* Mini board - 4x4 */}
           <rect x="20" y="0" width="40" height="40" fill="#f0d9b5" />
           <rect x="60" y="0" width="40" height="40" fill="#769656" />
@@ -151,7 +151,7 @@ const tutorialSteps: TutorialStep[] = [
     tip: 'Capture high-value pieces when possible! Queen (9) > Rook (5) > Bishop/Knight (3) > Pawn (1)',
     image: (
       <div className="flex justify-center py-4">
-        <svg width="160" height="120" viewBox="0 0 160 120">
+        <svg width="160" height="120" viewBox="0 0 160 120" role="img" aria-label="White pawn capturing a black knight diagonally">
           {/* Board squares */}
           <rect x="20" y="40" width="40" height="40" fill="#769656" />
           <rect x="60" y="40" width="40" height="40" fill="#f0d9b5" />
@@ -216,7 +216,7 @@ const tutorialSteps: TutorialStep[] = [
     tip: 'Three ways to escape check: move the King, block the attack, or capture the attacker.',
     image: (
       <div className="flex justify-center py-4">
-        <svg width="200" height="120" viewBox="0 0 200 120">
+        <svg width="200" height="120" viewBox="0 0 200 120" role="img" aria-label="White queen attacking the black king diagonally, showing check">
           {/* Board squares */}
           <rect x="20" y="40" width="40" height="40" fill="#f0d9b5" />
           <rect x="60" y="40" width="40" height="40" fill="#769656" />
@@ -280,6 +280,11 @@ const tutorialSteps: TutorialStep[] = [
 
 export function Tutorial({ open, onClose, onComplete }: TutorialProps) {
   const [currentStep, setCurrentStep] = useState(0)
+
+  useEffect(() => {
+    if (open) setCurrentStep(0)
+  }, [open])
+
   const step = tutorialSteps[currentStep]
   const isLastStep = currentStep === tutorialSteps.length - 1
 
@@ -333,7 +338,7 @@ export function Tutorial({ open, onClose, onComplete }: TutorialProps) {
             </div>
           )}
 
-          <div className="flex justify-center gap-2 pt-2">
+          <div className="flex justify-center gap-2 pt-2" aria-hidden="true">
             {tutorialSteps.map((_, index) => (
               <div
                 key={index}

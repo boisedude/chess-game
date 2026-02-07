@@ -25,7 +25,7 @@ const characters = getAllCharacters()
 function MiniChessboard() {
   const size = 4
   return (
-    <div className="grid grid-cols-4 gap-0 w-20 h-20 rounded-lg overflow-hidden shadow-md border border-green-900/30">
+    <div className="grid grid-cols-4 gap-0 w-20 h-20 rounded-lg overflow-hidden shadow-md border border-green-900/30" aria-hidden="true">
       {Array.from({ length: size * size }, (_, i) => {
         const row = Math.floor(i / size)
         const col = i % size
@@ -63,9 +63,11 @@ export const WelcomeScreen = React.memo(function WelcomeScreen({
         </div>
       </div>
 
-      <div className="flex rounded-lg bg-gray-100 p-1 w-full max-w-xs">
+      <div className="flex rounded-lg bg-gray-100 p-1 w-full max-w-xs" role="tablist" aria-label="Game mode">
         <button
-          className={`flex-1 rounded-md py-2.5 text-sm font-semibold transition-all ${
+          role="tab"
+          aria-selected={mode === 'pvc'}
+          className={`flex-1 rounded-md py-2.5 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
             mode === 'pvc'
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-500 hover:text-gray-700'
@@ -75,7 +77,9 @@ export const WelcomeScreen = React.memo(function WelcomeScreen({
           vs AI
         </button>
         <button
-          className={`flex-1 rounded-md py-2.5 text-sm font-semibold transition-all ${
+          role="tab"
+          aria-selected={mode === 'pvp'}
+          className={`flex-1 rounded-md py-2.5 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 ${
             mode === 'pvp'
               ? 'bg-white text-gray-900 shadow-sm'
               : 'text-gray-500 hover:text-gray-700'
@@ -95,15 +99,17 @@ export const WelcomeScreen = React.memo(function WelcomeScreen({
               return (
                 <button
                   key={char.id}
-                  className={`flex items-center gap-3 rounded-xl p-3 sm:p-4 text-left transition-all border-2 ${
+                  className={`flex items-center gap-3 rounded-xl p-3 sm:p-4 text-left transition-all border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                     isSelected
-                      ? 'border-current shadow-lg scale-[1.02]'
+                      ? 'shadow-lg scale-[1.02] ring-2 ring-offset-2'
                       : 'border-transparent bg-white shadow-sm hover:shadow-md hover:scale-[1.01]'
                   }`}
                   style={isSelected ? {
                     borderColor: char.color,
                     backgroundColor: `${char.color}10`,
-                  } : undefined}
+                    '--tw-ring-color': char.color,
+                  } as React.CSSProperties : undefined}
+                  aria-pressed={isSelected}
                   onClick={() => onDifficultyChange(char.difficulty as Difficulty)}
                 >
                   <img

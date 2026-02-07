@@ -22,7 +22,7 @@ export function AudioControls({ isSfxMuted, isMusicMuted, onToggleSfx, onToggleM
         onClick={onToggleSfx}
         variant="ghost"
         size="icon"
-        className="h-9 w-9"
+        className="h-11 w-11"
         aria-label={isSfxMuted ? 'Unmute sounds' : 'Mute sounds'}
         title={isSfxMuted ? 'Unmute sounds' : 'Mute sounds'}
       >
@@ -36,7 +36,7 @@ export function AudioControls({ isSfxMuted, isMusicMuted, onToggleSfx, onToggleM
         onClick={onToggleMusic}
         variant="ghost"
         size="icon"
-        className="h-9 w-9"
+        className="h-11 w-11"
         aria-label={isMusicMuted ? 'Unmute music' : 'Mute music'}
         title={isMusicMuted ? 'Unmute music' : 'Mute music'}
       >

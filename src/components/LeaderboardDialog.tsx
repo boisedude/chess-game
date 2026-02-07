@@ -46,17 +46,19 @@ export const LeaderboardDialog = React.memo(function LeaderboardDialog({
           <DialogTitle className="flex items-center justify-between">
             <span>Game Stats</span>
           </DialogTitle>
-          <DialogDescription>
-            {isEditing ? (
-              <div className="flex items-center gap-2 pt-2">
-                <Input value={playerName} onChange={e => setPlayerName(e.target.value)} placeholder="Enter your name" maxLength={20} className="flex-1" />
-                <Button size="sm" onClick={handleSaveName}>Save</Button>
-              </div>
-            ) : (
-              <button onClick={() => setIsEditing(true)} className="text-left hover:underline focus:underline focus:outline-none">
-                Player: {stats.playerName}
-              </button>
-            )}
+          <DialogDescription asChild>
+            <div className="text-sm text-muted-foreground">
+              {isEditing ? (
+                <div className="flex items-center gap-2 pt-2">
+                  <Input value={playerName} onChange={e => setPlayerName(e.target.value)} placeholder="Enter your name" maxLength={20} className="flex-1" />
+                  <Button size="sm" onClick={handleSaveName}>Save</Button>
+                </div>
+              ) : (
+                <button onClick={() => setIsEditing(true)} className="text-left hover:underline focus:underline focus:outline-none">
+                  Player: {stats.playerName}
+                </button>
+              )}
+            </div>
           </DialogDescription>
         </DialogHeader>
 

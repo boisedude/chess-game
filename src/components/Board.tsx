@@ -96,8 +96,9 @@ export const Board = React.memo(function Board({
                 aria-label="Chess game board"
                 onKeyDown={handleGridKeyDown}
               >
-                {board.map((row, rowIndex) =>
-                  row.map((cell, colIndex) => {
+                {board.map((row, rowIndex) => (
+                  <div key={rowIndex} role="row" className="contents">
+                  {row.map((cell, colIndex) => {
                     const isDark = (rowIndex + colIndex) % 2 === 1
 
                     const isAnimatingTo =
@@ -154,13 +155,14 @@ export const Board = React.memo(function Board({
                         }
                       />
                     )
-                  })
-                )}
+                  })}
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* File labels (bottom) */}
-            <div className="grid grid-cols-8 gap-0 mt-1 sm:mt-2 text-center text-xs sm:text-sm text-amber-900 font-semibold">
+            <div className="grid grid-cols-8 gap-0 mt-1 sm:mt-2 text-center text-xs sm:text-sm text-amber-100/80 font-semibold">
               {FILE_LABELS.map(label => (
                 <div key={label}>{label}</div>
               ))}

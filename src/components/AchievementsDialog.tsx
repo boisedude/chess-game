@@ -55,19 +55,19 @@ export const AchievementsDialog = React.memo(function AchievementsDialog({
               <div
                 key={achievement.id}
                 className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${
-                  isUnlocked ? 'border-amber-500/30 bg-amber-950/20' : 'border-muted bg-muted/30 opacity-50'
+                  isUnlocked ? 'border-amber-400 bg-amber-50' : 'border-muted bg-muted/30 opacity-50'
                 }`}
               >
                 <span className={`text-2xl ${isUnlocked ? '' : 'grayscale'}`} role="img" aria-hidden="true">
                   {achievement.icon}
                 </span>
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <span className={`text-sm font-semibold ${isUnlocked ? 'text-amber-200' : 'text-muted-foreground'}`}>
+                  <span className={`text-sm font-semibold ${isUnlocked ? 'text-amber-800' : 'text-muted-foreground'}`}>
                     {achievement.name}
                   </span>
                   <span className="text-xs text-muted-foreground">{achievement.description}</span>
                   {unlockDate && (
-                    <span className="mt-1 text-xs text-amber-500/70">Unlocked {unlockDate}</span>
+                    <span className="mt-1 text-xs text-amber-600">Unlocked {unlockDate}</span>
                   )}
                 </div>
               </div>

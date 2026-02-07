@@ -483,6 +483,18 @@
   animation: valid-move-glow 1.2s ease-in-out infinite;
 }
 
+/* Reduced motion: disable all game animations */
+@media (prefers-reduced-motion: reduce) {
+  .animate-piece-slide,
+  .animate-piece-capture,
+  .animate-piece-promotion,
+  .animate-selected-glow,
+  .animate-valid-move-glow,
+  .animate-check-pulse {
+    animation: none !important;
+  }
+}
+
 /* Cell selected state */
 .cell-selected {
   background: linear-gradient(135deg,
@@ -500,26 +512,3 @@
   pointer-events: none;
 }
 
-/* Check highlight on king's square */
-.cell-in-check {
-  animation: check-pulse 1s ease-in-out infinite;
-  background: radial-gradient(circle, rgba(239, 68, 68, 0.3) 0%, transparent 70%) !important;
-}
-
-/* Last move highlight */
-.cell-last-move {
-  background: linear-gradient(135deg,
-    rgba(250, 204, 21, 0.1) 0%,
-    rgba(250, 204, 21, 0.05) 100%
-  ) !important;
-}
-
-/* Capture indicator for cells with opponent pieces */
-.cell-highlighted-capture::after {
-  content: '';
-  position: absolute;
-  inset: 3px;
-  border: 3px solid rgba(239, 68, 68, 0.5);
-  border-radius: 50%;
-  pointer-events: none;
-}

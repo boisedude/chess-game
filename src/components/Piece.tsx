@@ -57,7 +57,7 @@ export const Piece = React.memo(function Piece({
     >
       <span
         className={cn(
-          'text-3xl sm:text-5xl leading-none transition-[filter] duration-200',
+          'text-4xl sm:text-5xl leading-none transition-[filter] duration-200',
           isWhite ? 'chess-piece-white' : 'chess-piece-black',
           canHover && 'hover:drop-shadow-lg',
         )}

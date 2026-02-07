@@ -62,7 +62,7 @@ export const GameHistoryDialog = React.memo(function GameHistoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Game History</DialogTitle>
           <DialogDescription>
@@ -72,7 +72,7 @@ export const GameHistoryDialog = React.memo(function GameHistoryDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="max-h-80 overflow-y-auto py-2">
+        <div className="flex-1 min-h-0 overflow-y-auto py-2">
           {history.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
               <p className="text-sm">No games played yet.</p>

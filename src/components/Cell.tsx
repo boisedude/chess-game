@@ -58,7 +58,7 @@ export const Cell = React.memo(function Cell({
     }
   }
 
-  const baseClasses = `aspect-square flex items-center justify-center transition-all duration-200 relative touch-manipulation`
+  const baseClasses = `aspect-square flex items-center justify-center transition-all duration-200 relative touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-inset`
 
   const squareClasses = isDark ? 'chess-square-dark' : 'chess-square-light'
 
@@ -102,7 +102,7 @@ export const Cell = React.memo(function Cell({
       aria-label={cellDescription}
       aria-selected={isSelected}
       aria-disabled={disabled}
-      tabIndex={!disabled ? 0 : -1}
+      tabIndex={!disabled && (row === 7 && col === 4) ? 0 : -1}
     >
       {isHighlighted && !piece && (
         <div className="valid-move-indicator animate-valid-move-glow" />

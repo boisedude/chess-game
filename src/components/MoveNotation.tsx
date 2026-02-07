@@ -22,7 +22,13 @@ function MoveNotationComponent({ moveHistory }: MoveNotationProps) {
     }
   }, [moveHistory.length])
 
-  if (moveHistory.length === 0) return null
+  if (moveHistory.length === 0) {
+    return (
+      <div className="w-full max-w-md max-h-32 sm:max-h-40 overflow-y-auto rounded-lg bg-white px-3 py-1.5 shadow-lg font-mono text-xs sm:text-sm">
+        <span className="text-gray-400 italic">Moves will appear here...</span>
+      </div>
+    )
+  }
 
   // Pair moves: 1. e4 e5  2. Nf3 Nc6
   const pairs: { num: number; white: string; black?: string }[] = []
@@ -39,7 +45,9 @@ function MoveNotationComponent({ moveHistory }: MoveNotationProps) {
   return (
     <div
       ref={scrollRef}
-      className="w-full max-w-md max-h-16 overflow-y-auto rounded-lg bg-white px-3 py-1.5 shadow-lg font-mono text-xs sm:text-sm"
+      className="w-full max-w-md max-h-32 sm:max-h-40 overflow-y-auto rounded-lg bg-white px-3 py-1.5 shadow-lg font-mono text-xs sm:text-sm"
+      role="log"
+      aria-label="Move history"
     >
       <div className="flex flex-wrap gap-x-3 gap-y-0.5">
         {pairs.map((pair, idx) => (
