@@ -60,9 +60,21 @@ function createSetupState(mode: GameMode = 'pvc', difficulty: Difficulty = 'medi
   }
 }
 
+/** True when the arcade opened the page with a valid ?character= (opponent already chosen). */
+function hasCharacterParam(): boolean {
+  try {
+    const id = new URLSearchParams(window.location.search).get('character')
+    return id === 'bella' || id === 'coop' || id === 'bentley'
+  } catch {
+    return false
+  }
+}
+
 export function useChessGame(initialDifficulty: Difficulty = 'medium') {
   const [gameState, setGameState] = useState<GameState>(() =>
-    createSetupState('pvc', initialDifficulty)
+    hasCharacterParam()
+      ? createInitialGameState('pvc', initialDifficulty)
+      : createSetupState('pvc', initialDifficulty)
   )
   const [selectedPiece, setSelectedPiece] = useState<Position | null>(null)
   const [isAnimating, setIsAnimating] = useState(false)

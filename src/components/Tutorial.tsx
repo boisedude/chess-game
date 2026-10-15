@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from './ui/dialog'
 import { Button } from './ui/button'
+import { getAllCharacters } from '@shared/characters'
 
 interface TutorialProps {
   open: boolean
@@ -32,31 +33,31 @@ interface TutorialStep {
 
 const tutorialSteps: TutorialStep[] = [
   {
-    title: 'Welcome to Chess!',
+    title: 'Welcome to chess',
     description:
-      'Chess is a two-player strategy game played on an 8\u00d78 board. White moves first. The goal is to checkmate your opponent\'s King!',
+      'Chess is a two-player strategy game played on an 8\u00d78 board. White moves first. The goal is to checkmate your opponent\'s king.',
     image: (
       <div className="flex items-center justify-center gap-6 py-4">
         <div className="text-center">
           <div className="text-5xl mb-1">♔</div>
-          <div className="text-xs font-semibold text-gray-600">White</div>
+          <div className="text-xs font-semibold text-muted-foreground">White</div>
         </div>
-        <div className="text-2xl font-bold text-gray-400">VS</div>
+        <div className="text-2xl font-bold text-muted-foreground">vs</div>
         <div className="text-center">
           <div className="text-5xl mb-1">♚</div>
-          <div className="text-xs font-semibold text-gray-600">Black</div>
+          <div className="text-xs font-semibold text-muted-foreground">Black</div>
         </div>
       </div>
     ),
   },
   {
-    title: 'The Goal',
+    title: 'The goal',
     description:
-      'Checkmate your opponent\'s King! This means their King is under attack and cannot escape. Capture pieces, control the board, and corner their King.',
-    tip: 'Plan ahead! Every move should either attack, defend, or improve your position.',
+      'Checkmate your opponent\'s king. This means their King is under attack and cannot escape. Capture pieces, control the board, and corner their King.',
+    tip: 'Plan ahead. Every move should either attack, defend, or improve your position.',
   },
   {
-    title: 'Your Pieces',
+    title: 'Your pieces',
     description:
       'Each side starts with 16 pieces: 1 King, 1 Queen, 2 Rooks, 2 Bishops, 2 Knights, and 8 Pawns. Each type moves differently.',
     image: (
@@ -64,41 +65,41 @@ const tutorialSteps: TutorialStep[] = [
         <div>
           <div className="text-3xl">♔</div>
           <div className="font-semibold">King</div>
-          <div className="text-xs text-gray-500">1 square, any direction</div>
+          <div className="text-xs text-muted-foreground">1 square, any direction</div>
         </div>
         <div>
           <div className="text-3xl">♕</div>
           <div className="font-semibold">Queen</div>
-          <div className="text-xs text-gray-500">Any direction, any distance</div>
+          <div className="text-xs text-muted-foreground">Any direction, any distance</div>
         </div>
         <div>
           <div className="text-3xl">♖</div>
           <div className="font-semibold">Rook</div>
-          <div className="text-xs text-gray-500">Straight lines</div>
+          <div className="text-xs text-muted-foreground">Straight lines</div>
         </div>
         <div>
           <div className="text-3xl">♗</div>
           <div className="font-semibold">Bishop</div>
-          <div className="text-xs text-gray-500">Diagonals only</div>
+          <div className="text-xs text-muted-foreground">Diagonals only</div>
         </div>
         <div>
           <div className="text-3xl">♘</div>
           <div className="font-semibold">Knight</div>
-          <div className="text-xs text-gray-500">L-shape, jumps pieces</div>
+          <div className="text-xs text-muted-foreground">L-shape, jumps pieces</div>
         </div>
         <div>
           <div className="text-3xl">♙</div>
           <div className="font-semibold">Pawn</div>
-          <div className="text-xs text-gray-500">Forward 1, captures diagonal</div>
+          <div className="text-xs text-muted-foreground">Forward 1, captures diagonal</div>
         </div>
       </div>
     ),
   },
   {
-    title: 'How Pieces Move',
+    title: 'How pieces move',
     description:
-      'Click a piece to see its valid moves highlighted in green. Click a highlighted square to move there. Each piece type has unique movement rules.',
-    tip: 'Knights are the only pieces that can jump over others!',
+      'Click a piece to see its valid moves marked with dots. Click a highlighted square to move there. Each piece type has unique movement rules.',
+    tip: 'Knights are the only pieces that can jump over others.',
     image: (
       <div className="flex justify-center py-4">
         <svg width="200" height="160" viewBox="0 0 200 160" role="img" aria-label="Knight on a mini board showing L-shaped movement destinations">
@@ -145,10 +146,10 @@ const tutorialSteps: TutorialStep[] = [
     ),
   },
   {
-    title: 'Capturing Pieces',
+    title: 'Capturing pieces',
     description:
       'Move your piece to a square occupied by an opponent\'s piece to capture it. The captured piece is removed from the board. Pawns capture diagonally forward.',
-    tip: 'Capture high-value pieces when possible! Queen (9) > Rook (5) > Bishop/Knight (3) > Pawn (1)',
+    tip: 'Capture high-value pieces when you can. Queen (9) > Rook (5) > Bishop/Knight (3) > Pawn (1)',
     image: (
       <div className="flex justify-center py-4">
         <svg width="160" height="120" viewBox="0 0 160 120" role="img" aria-label="White pawn capturing a black knight diagonally">
@@ -180,39 +181,39 @@ const tutorialSteps: TutorialStep[] = [
     ),
   },
   {
-    title: 'Special Moves',
+    title: 'Special moves',
     description:
-      'Chess has three special moves that add strategic depth to the game.',
+      'Chess has three special moves.',
     image: (
       <div className="space-y-3 text-sm py-2">
-        <div className="flex items-start gap-3 rounded-lg bg-muted/50 p-3">
+        <div className="flex items-start gap-3 rounded-md border border-border p-3">
           <div className="text-2xl shrink-0">♔♖</div>
           <div>
             <div className="font-semibold">Castling</div>
             <div className="text-xs text-muted-foreground">King moves 2 squares toward a rook; the rook jumps over. Only if neither has moved and no squares are under attack.</div>
           </div>
         </div>
-        <div className="flex items-start gap-3 rounded-lg bg-muted/50 p-3">
+        <div className="flex items-start gap-3 rounded-md border border-border p-3">
           <div className="text-2xl shrink-0">♙♟</div>
           <div>
-            <div className="font-semibold">En Passant</div>
-            <div className="text-xs text-muted-foreground">If a pawn moves 2 squares forward past an enemy pawn, it can be captured as if it moved 1 square. Must capture immediately!</div>
+            <div className="font-semibold">En passant</div>
+            <div className="text-xs text-muted-foreground">If a pawn moves 2 squares forward past an enemy pawn, it can be captured as if it moved 1 square. It must be captured right away.</div>
           </div>
         </div>
-        <div className="flex items-start gap-3 rounded-lg bg-muted/50 p-3">
+        <div className="flex items-start gap-3 rounded-md border border-border p-3">
           <div className="text-2xl shrink-0">♙→♕</div>
           <div>
-            <div className="font-semibold">Pawn Promotion</div>
-            <div className="text-xs text-muted-foreground">A pawn reaching the opposite end becomes a Queen, Rook, Bishop, or Knight of your choice!</div>
+            <div className="font-semibold">Pawn promotion</div>
+            <div className="text-xs text-muted-foreground">A pawn reaching the opposite end becomes a Queen, Rook, Bishop, or Knight of your choice.</div>
           </div>
         </div>
       </div>
     ),
   },
   {
-    title: 'Check & Checkmate',
+    title: 'Check and checkmate',
     description:
-      'When a King is under attack, it\'s in "check" and must escape. If there\'s no way to escape, it\'s "checkmate" and the game is over!',
+      'When a King is under attack, it\'s in "check" and must escape. If there\'s no way to escape, it\'s "checkmate" and the game is over.',
     tip: 'Three ways to escape check: move the King, block the attack, or capture the attacker.',
     image: (
       <div className="flex justify-center py-4">
@@ -240,41 +241,38 @@ const tutorialSteps: TutorialStep[] = [
           <path d="M55 58 L145 98" stroke="#ef4444" strokeWidth="2" fill="none" strokeDasharray="5,3" />
 
           {/* CHECK label */}
-          <text x="100" y="25" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#ef4444">CHECK!</text>
+          <text x="100" y="25" textAnchor="middle" fontSize="16" fontWeight="bold" fill="#ef4444">Check</text>
         </svg>
       </div>
     ),
   },
   {
-    title: 'Choose Your Challenge',
+    title: 'Your opponents',
     description:
-      'Start on Easy mode with Bella to learn the basics. When you\'re ready, challenge Coop on Medium or face Bentley on Hard \u2014 he thinks many moves ahead!',
-    tip: 'Easy is great for learning. Medium teaches strategy. Hard will really test your skills!',
+      'Start with Bella to learn the basics. Coop is a steady middle level. Bentley thinks many moves ahead.',
+    tip: 'You can change opponent at any time from the chip at the top of the page.',
     image: (
-      <div className="flex items-center justify-center gap-4 py-4 text-sm">
-        <div className="text-center px-3 py-2 rounded-lg bg-amber-50 border border-amber-200">
-          <div className="text-2xl mb-1">🐕</div>
-          <div className="font-semibold text-amber-600">Bella</div>
-          <div className="text-xs text-gray-500">Easy</div>
-        </div>
-        <div className="text-center px-3 py-2 rounded-lg bg-blue-50 border border-blue-200">
-          <div className="text-2xl mb-1">🎮</div>
-          <div className="font-semibold text-blue-600">Coop</div>
-          <div className="text-xs text-gray-500">Medium</div>
-        </div>
-        <div className="text-center px-3 py-2 rounded-lg bg-red-50 border border-red-200">
-          <div className="text-2xl mb-1">🐺</div>
-          <div className="font-semibold text-red-600">Bentley</div>
-          <div className="text-xs text-gray-500">Hard</div>
-        </div>
+      <div className="flex items-start justify-center gap-5 py-4 text-sm">
+        {getAllCharacters().map((c) => (
+          <div key={c.id} className="text-center">
+            <img
+              src={c.avatar}
+              alt=""
+              className="mx-auto mb-1 h-12 w-12 rounded-full object-cover"
+              style={{ boxShadow: `0 0 0 2px var(--arcade-${c.id})` }}
+            />
+            <div className="font-semibold">{c.name}</div>
+            <div className="text-xs capitalize text-muted-foreground">{c.difficulty}</div>
+          </div>
+        ))}
       </div>
     ),
   },
   {
-    title: 'Ready to Play!',
+    title: 'Ready to play',
     description:
-      'You\'re all set! Remember: control the center, develop your pieces early, castle to safety, and watch for tactical opportunities. Good luck!',
-    tip: 'Press U to undo your last move. Click on any piece to see where it can go!',
+      'Control the center, develop your pieces early, castle to safety, and watch for tactics.',
+    tip: 'Press U to undo your last move. Click a piece to see where it can go.',
   },
 ]
 
@@ -282,6 +280,7 @@ export function Tutorial({ open, onClose, onComplete }: TutorialProps) {
   const [currentStep, setCurrentStep] = useState(0)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (open) setCurrentStep(0)
   }, [open])
 
@@ -316,7 +315,7 @@ export function Tutorial({ open, onClose, onComplete }: TutorialProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-xl">{step.title}</DialogTitle>
           <DialogDescription>
@@ -330,11 +329,8 @@ export function Tutorial({ open, onClose, onComplete }: TutorialProps) {
           <p className="text-center text-muted-foreground">{step.description}</p>
 
           {step.tip && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-              <div className="mb-1 text-sm font-semibold text-amber-900">
-                Tip
-              </div>
-              <p className="text-sm text-amber-800">{step.tip}</p>
+            <div className="rounded-md border border-border bg-muted p-3">
+              <p className="text-sm text-muted-foreground">{step.tip}</p>
             </div>
           )}
 
@@ -354,17 +350,17 @@ export function Tutorial({ open, onClose, onComplete }: TutorialProps) {
           </div>
         </div>
 
-        <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
-          <Button variant="ghost" onClick={handleSkip} className="sm:w-auto">
-            Skip Tutorial
+        <DialogFooter className="flex-row items-center justify-between gap-2 sm:justify-between sm:space-x-0">
+          <Button variant="ghost" onClick={handleSkip} className="h-11 sm:w-auto">
+            Skip
           </Button>
           <div className="flex gap-2">
             {currentStep > 0 && (
-              <Button variant="outline" onClick={handleBack}>
+              <Button variant="outline" onClick={handleBack} className="h-11">
                 Back
               </Button>
             )}
-            <Button onClick={handleNext}>{isLastStep ? "Let's Play!" : 'Next'}</Button>
+            <Button onClick={handleNext} className="h-11">{isLastStep ? 'Start playing' : 'Next'}</Button>
           </div>
         </DialogFooter>
       </DialogContent>

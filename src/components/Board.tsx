@@ -75,13 +75,13 @@ export const Board = React.memo(function Board({
   )
 
   return (
-    <div className="w-full max-w-[95vw] sm:max-w-2xl mx-auto px-1 sm:px-0">
-      <div className="board-frame">
+    <div className="arcade-board board-frame">
+      <div className="contents">
         <div className="flex">
           {/* Rank labels (left side) */}
           <div className="flex flex-col justify-around pr-1 sm:pr-2">
             {RANK_LABELS.map(label => (
-              <div key={label} className="text-xs sm:text-sm font-semibold text-amber-100/80 flex items-center justify-center h-full">
+              <div key={label} className="text-xs sm:text-sm font-semibold text-[#d9c3a0] flex items-center justify-center h-full">
                 {label}
               </div>
             ))}
@@ -162,7 +162,7 @@ export const Board = React.memo(function Board({
             </div>
 
             {/* File labels (bottom) */}
-            <div className="grid grid-cols-8 gap-0 mt-1 sm:mt-2 text-center text-xs sm:text-sm text-amber-100/80 font-semibold">
+            <div className="grid grid-cols-8 gap-0 mt-1 sm:mt-2 text-center text-xs sm:text-sm text-[#d9c3a0] font-semibold">
               {FILE_LABELS.map(label => (
                 <div key={label}>{label}</div>
               ))}

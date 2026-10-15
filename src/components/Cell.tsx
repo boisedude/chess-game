@@ -58,7 +58,7 @@ export const Cell = React.memo(function Cell({
     }
   }
 
-  const baseClasses = `aspect-square flex items-center justify-center transition-all duration-200 relative touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-inset`
+  const baseClasses = `aspect-square flex items-center justify-center transition-all duration-200 relative touch-manipulation focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset`
 
   const squareClasses = isDark ? 'chess-square-dark' : 'chess-square-light'
 
@@ -68,9 +68,11 @@ export const Cell = React.memo(function Cell({
       ? 'cell-selected'
       : ''
 
+  const checkClasses = isInCheck ? 'king-in-check' : ''
+
   const lastMoveClasses =
     (lastMoveFrom || lastMoveTo) && !isSelected && !isHighlighted
-      ? 'ring-2 ring-inset ring-amber-400/40'
+      ? 'ring-2 ring-inset ring-primary/50'
       : ''
 
   const cursorClasses = disabled
@@ -93,7 +95,7 @@ export const Cell = React.memo(function Cell({
 
   return (
     <div
-      className={`${baseClasses} ${squareClasses} ${stateClasses} ${lastMoveClasses} ${cursorClasses}`}
+      className={`${baseClasses} ${squareClasses} ${stateClasses} ${checkClasses} ${lastMoveClasses} ${cursorClasses}`}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       data-row={row}
@@ -105,11 +107,11 @@ export const Cell = React.memo(function Cell({
       tabIndex={!disabled && (row === 7 && col === 4) ? 0 : -1}
     >
       {isHighlighted && !piece && (
-        <div className="valid-move-indicator animate-valid-move-glow" />
+        <div className="valid-move-indicator" />
       )}
 
       {isHighlighted && piece && (
-        <div className="absolute inset-0 border-4 border-green-400/60 rounded-sm pointer-events-none" />
+        <div className="absolute inset-0 border-4 border-primary/70 rounded-sm pointer-events-none" />
       )}
 
       {piece && (
@@ -130,7 +132,6 @@ export const Cell = React.memo(function Cell({
             isAnimating={isAnimating}
             isBeingCaptured={isBeingCaptured}
             isBeingPromoted={isBeingPromoted}
-            isInCheck={isInCheck}
           />
         </div>
       )}

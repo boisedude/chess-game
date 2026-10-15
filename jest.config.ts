@@ -15,7 +15,9 @@ const config: Config = {
   setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^@shared/(.*)$': '<rootDir>/../shared/$1',
+    '^@shared/(.*)$': '<rootDir>/shared/$1',
+    '^react$': '<rootDir>/node_modules/react',
+    '^react/jsx-runtime$': '<rootDir>/node_modules/react/jsx-runtime',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
 }

@@ -8,9 +8,10 @@ export default defineConfig({
   base: './', // Use relative paths for subdirectory deployment
   plugins: [react(), tailwindcss()],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@shared': path.resolve(__dirname, '../shared'),
+      '@shared': path.resolve(__dirname, './shared'),
     },
   },
   server: {

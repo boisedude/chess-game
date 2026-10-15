@@ -1,19 +1,15 @@
 /**
  * Game Controls Component
  *
- * Two-row control bar. Top: difficulty selector (PvC only), New Game, Undo, Stats, Help.
- * Bottom: Achievements, History, Change Mode.
+ * One primary button (New game), outline actions, and a quiet ghost row
+ * for Achievements, History, Settings and Change mode.
  */
 
 import React from 'react'
 import { Button } from './ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
-import { CounterClockwiseClockIcon, GearIcon } from '@radix-ui/react-icons'
-import type { Difficulty, GameMode, GameStatus } from '@/types/chess.types'
+import type { GameMode, GameStatus } from '@/types/chess.types'
 
 interface GameControlsProps {
-  difficulty: Difficulty
-  onDifficultyChange: (difficulty: Difficulty) => void
   onNewGame: () => void
   onShowLeaderboard: () => void
   onShowHelp?: () => void
@@ -31,8 +27,6 @@ interface GameControlsProps {
 }
 
 export const GameControls = React.memo(function GameControls({
-  difficulty,
-  onDifficultyChange,
   onNewGame,
   onShowLeaderboard,
   onShowHelp,
@@ -49,101 +43,71 @@ export const GameControls = React.memo(function GameControls({
   gameStatus = 'playing',
 }: GameControlsProps) {
   return (
-    <div className="flex flex-col gap-3 sm:gap-6">
-      <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 sm:gap-4">
-        {gameMode === 'pvc' && (
-          <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-            <label htmlFor="difficulty" className="text-xs sm:text-sm font-medium whitespace-nowrap">
-              Your Opponent:
-            </label>
-            <Select value={difficulty} onValueChange={value => onDifficultyChange(value as Difficulty)}>
-              <SelectTrigger id="difficulty" className="w-full sm:w-52 h-10 sm:h-auto text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="easy">Bella - Playful Pup</SelectItem>
-                <SelectItem value="medium">Coop - Casual Challenger</SelectItem>
-                <SelectItem value="hard">Bentley - The Mastermind</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="flex w-full flex-col items-center gap-2">
+      <div className="arcade-controls">
+        <Button onClick={onNewGame} disabled={disabled} className="h-11 px-5">
+          New game
+        </Button>
+
+        {onUndo && gameStatus === 'playing' && (
+          <Button
+            onClick={onUndo}
+            disabled={disabled || !canUndo}
+            variant="outline"
+            className="h-11 px-5"
+            title="Undo (U)"
+          >
+            Undo
+          </Button>
         )}
 
-        <div className="flex flex-wrap justify-center gap-2 w-full sm:w-auto">
-          <Button onClick={onNewGame} disabled={disabled} variant="default" className="min-w-[5.5rem] sm:min-w-0 h-10 sm:h-auto text-sm sm:text-base">
-            New Game
+        {onResign && gameStatus === 'playing' && (
+          <Button
+            onClick={onResign}
+            disabled={disabled}
+            variant="outline"
+            className="h-11 px-5 border-destructive/50 text-destructive hover:text-destructive"
+          >
+            Resign
           </Button>
+        )}
 
-          {onUndo && gameStatus === 'playing' && (
-            <Button
-              onClick={onUndo}
-              disabled={disabled || !canUndo}
-              variant="outline"
-              className="min-w-[5.5rem] sm:min-w-0 h-10 sm:h-auto text-sm sm:text-base gap-1"
-              aria-label="Undo last move (U)"
-              title="Undo (U)"
-            >
-              <CounterClockwiseClockIcon className="h-4 w-4" />
-              Undo
-            </Button>
-          )}
-
-          {onResign && gameStatus === 'playing' && (
-            <Button
-              onClick={onResign}
-              disabled={disabled}
-              variant="outline"
-              className="min-w-[5.5rem] sm:min-w-0 h-10 sm:h-auto text-sm sm:text-base text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300"
-              aria-label="Resign"
-            >
-              Resign
-            </Button>
-          )}
-
-          {onOfferDraw && gameMode === 'pvp' && gameStatus === 'playing' && (
-            <Button
-              onClick={onOfferDraw}
-              disabled={disabled}
-              variant="outline"
-              className="min-w-[5.5rem] sm:min-w-0 h-10 sm:h-auto text-sm sm:text-base"
-              aria-label="Offer draw"
-            >
-              Draw
-            </Button>
-          )}
-
-          <Button onClick={onShowLeaderboard} disabled={disabled} variant="outline" className="min-w-[5.5rem] sm:min-w-0 h-10 sm:h-auto text-sm sm:text-base">
-            Stats
+        {onOfferDraw && gameMode === 'pvp' && gameStatus === 'playing' && (
+          <Button onClick={onOfferDraw} disabled={disabled} variant="outline" className="h-11 px-5">
+            Offer draw
           </Button>
+        )}
 
-          {onShowHelp && (
-            <Button onClick={onShowHelp} disabled={disabled} variant="outline" className="min-w-[5.5rem] sm:min-w-0 h-10 sm:h-auto text-sm sm:text-base">
-              Help
-            </Button>
-          )}
-        </div>
+        <Button onClick={onShowLeaderboard} disabled={disabled} variant="outline" className="h-11 px-5">
+          Stats
+        </Button>
+
+        {onShowHelp && (
+          <Button onClick={onShowHelp} disabled={disabled} variant="outline" className="h-11 px-5">
+            How to play
+          </Button>
+        )}
       </div>
 
-      <div className="flex flex-wrap items-center justify-center gap-2">
+      <div className="arcade-controls">
         {onShowAchievements && (
-          <Button onClick={onShowAchievements} disabled={disabled} variant="ghost" size="sm" className="text-xs sm:text-sm">
+          <Button onClick={onShowAchievements} disabled={disabled} variant="ghost" className="h-11 px-2 text-muted-foreground">
             Achievements
           </Button>
         )}
         {onShowHistory && (
-          <Button onClick={onShowHistory} disabled={disabled} variant="ghost" size="sm" className="text-xs sm:text-sm">
+          <Button onClick={onShowHistory} disabled={disabled} variant="ghost" className="h-11 px-2 text-muted-foreground">
             History
           </Button>
         )}
         {onShowSettings && (
-          <Button onClick={onShowSettings} disabled={disabled} variant="ghost" size="sm" className="text-xs sm:text-sm gap-1">
-            <GearIcon className="h-3.5 w-3.5" />
+          <Button onClick={onShowSettings} disabled={disabled} variant="ghost" className="h-11 px-2 text-muted-foreground">
             Settings
           </Button>
         )}
         {onReturnToSetup && (
-          <Button onClick={onReturnToSetup} disabled={disabled} variant="ghost" size="sm" className="text-xs sm:text-sm">
-            Change Mode
+          <Button onClick={onReturnToSetup} disabled={disabled} variant="ghost" className="h-11 px-2 text-muted-foreground">
+            Change mode
           </Button>
         )}
       </div>

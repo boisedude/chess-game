@@ -213,4 +213,4 @@ Static SPA. `npm run build` outputs to `dist/`. Deploy to any static host. Base 
 
 ## Related Games
 
-This chess game follows the same architecture as the other games in the collection (mancala, connect4, checkers, othello, tictactoe, gomoku, nine-mens-morris). See the parent `/mnt/d/projects/mygame/CLAUDE.md` for cross-game patterns.
+This chess game follows the same architecture as the other games in the collection (mancala, connect4, checkers, othello, tictactoe, gomoku, nine-mens-morris). See the parent `~/projects/MyGame/CLAUDE.md` for cross-game patterns.

@@ -1,7 +1,7 @@
 /**
  * Achievements Dialog Component
  *
- * Displays all 16 achievements in a responsive grid.
+ * Lists every achievement as a plain row; unlocked ones are marked by colour and date.
  */
 
 import React from 'react'
@@ -33,50 +33,42 @@ export const AchievementsDialog = React.memo(function AchievementsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Achievements</span>
             <span className="text-sm font-normal text-muted-foreground">
-              {unlockedCount} / {totalCount} Unlocked
+              {unlockedCount} of {totalCount} unlocked
             </span>
           </DialogTitle>
           <DialogDescription>
-            Complete challenges to unlock achievements.
+            Earned by playing.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 gap-3 py-4 sm:grid-cols-2">
+        <ul className="divide-y">
           {achievementList.map((achievement) => {
             const isUnlocked = achievement.unlockedAt !== undefined
             const unlockDate = isUnlocked ? new Date(achievement.unlockedAt!).toLocaleDateString() : null
 
             return (
-              <div
-                key={achievement.id}
-                className={`flex items-start gap-3 rounded-lg border p-3 transition-colors ${
-                  isUnlocked ? 'border-amber-400 bg-amber-50' : 'border-muted bg-muted/30 opacity-50'
-                }`}
-              >
-                <span className={`text-2xl ${isUnlocked ? '' : 'grayscale'}`} role="img" aria-hidden="true">
-                  {achievement.icon}
-                </span>
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <span className={`text-sm font-semibold ${isUnlocked ? 'text-amber-800' : 'text-muted-foreground'}`}>
+              <li key={achievement.id} className={`py-2.5 ${isUnlocked ? '' : 'opacity-60'}`}>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className={`text-sm font-semibold ${isUnlocked ? 'text-primary' : ''}`}>
                     {achievement.name}
                   </span>
-                  <span className="text-xs text-muted-foreground">{achievement.description}</span>
                   {unlockDate && (
-                    <span className="mt-1 text-xs text-amber-600">Unlocked {unlockDate}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">{unlockDate}</span>
                   )}
                 </div>
-              </div>
+                <span className="text-sm text-muted-foreground">{achievement.description}</span>
+              </li>
             )
           })}
-        </div>
+        </ul>
 
         <DialogFooter>
-          <Button onClick={onClose} variant="outline" className="w-full sm:w-auto">Close</Button>
+          <Button onClick={onClose} variant="outline" className="h-11 w-full sm:w-auto">Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

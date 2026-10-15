@@ -1,8 +1,8 @@
 /**
  * Move Notation Component
  *
- * Compact scrollable panel showing paired algebraic notation moves.
- * Auto-scrolls to the latest move. Last move pair is highlighted.
+ * A single muted line of paired algebraic moves under the board.
+ * Scrolls to the latest move when it grows past two lines.
  */
 
 import React, { useRef, useEffect } from 'react'
@@ -22,13 +22,7 @@ function MoveNotationComponent({ moveHistory }: MoveNotationProps) {
     }
   }, [moveHistory.length])
 
-  if (moveHistory.length === 0) {
-    return (
-      <div className="w-full max-w-md max-h-32 sm:max-h-40 overflow-y-auto rounded-lg bg-white px-3 py-1.5 shadow-lg font-mono text-xs sm:text-sm">
-        <span className="text-gray-400 italic">Moves will appear here...</span>
-      </div>
-    )
-  }
+  if (moveHistory.length === 0) return null
 
   // Pair moves: 1. e4 e5  2. Nf3 Nc6
   const pairs: { num: number; white: string; black?: string }[] = []
@@ -40,32 +34,19 @@ function MoveNotationComponent({ moveHistory }: MoveNotationProps) {
     })
   }
 
-  const lastPairIdx = pairs.length - 1
-
   return (
     <div
       ref={scrollRef}
-      className="w-full max-w-md max-h-32 sm:max-h-40 overflow-y-auto rounded-lg bg-white px-3 py-1.5 shadow-lg font-mono text-xs sm:text-sm"
+      className="max-h-10 w-full max-w-[min(640px,calc(100dvw-2rem))] overflow-y-auto font-mono text-xs leading-5 text-muted-foreground"
       role="log"
       aria-label="Move history"
     >
-      <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-        {pairs.map((pair, idx) => (
-          <span
-            key={pair.num}
-            className={idx === lastPairIdx ? 'bg-amber-50 rounded px-0.5' : ''}
-          >
-            <span className="text-gray-400">{pair.num}.</span>{' '}
-            <span className="text-gray-800">{pair.white}</span>
-            {pair.black && (
-              <>
-                {' '}
-                <span className="text-gray-800">{pair.black}</span>
-              </>
-            )}
-          </span>
-        ))}
-      </div>
+      {pairs.map((pair) => (
+        <span key={pair.num} className="mr-3 inline-block whitespace-nowrap">
+          {pair.num}. {pair.white}
+          {pair.black ? ` ${pair.black}` : ''}
+        </span>
+      ))}
     </div>
   )
 }

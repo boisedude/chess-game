@@ -32,20 +32,7 @@ function formatDate(timestamp: number): string {
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function ResultBadge({ result }: { result: 'win' | 'loss' | 'draw' }) {
-  const styles = {
-    win: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-    loss: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-    draw: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-  }
-  const labels = { win: 'Win', loss: 'Loss', draw: 'Draw' }
-
-  return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${styles[result]}`}>
-      {labels[result]}
-    </span>
-  )
-}
+const RESULT_LABELS = { win: 'Win', loss: 'Loss', draw: 'Draw' }
 
 export const GameHistoryDialog = React.memo(function GameHistoryDialog({
   open,
@@ -62,13 +49,13 @@ export const GameHistoryDialog = React.memo(function GameHistoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
+      <DialogContent className="sm:max-w-lg flex flex-col">
         <DialogHeader>
           <DialogTitle>Game History</DialogTitle>
           <DialogDescription>
             {history.length > 0
               ? `${history.length} game${history.length === 1 ? '' : 's'} played`
-              : 'Your completed games will appear here'}
+              : 'Finished games appear here'}
           </DialogDescription>
         </DialogHeader>
 
@@ -76,18 +63,18 @@ export const GameHistoryDialog = React.memo(function GameHistoryDialog({
           {history.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
               <p className="text-sm">No games played yet.</p>
-              <p className="mt-1 text-xs">Complete a game to see it here!</p>
+              
             </div>
           ) : (
-            <div className="space-y-2">
+            <div>
               {history.map(record => (
-                <div key={record.id} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+                <div key={record.id} className="flex items-center justify-between border-b py-2.5">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium">
-                        {record.mode === 'pvp' ? 'PvP' : `vs ${DIFFICULTY_LABELS[record.difficulty] ?? record.difficulty}`}
+                        {record.mode === 'pvp' ? 'Two players' : `vs ${DIFFICULTY_LABELS[record.difficulty] ?? record.difficulty}`}
                       </span>
-                      <ResultBadge result={record.result} />
+                      <span className={`text-sm ${record.result === 'win' ? 'text-primary' : 'text-muted-foreground'}`}>{RESULT_LABELS[record.result]}</span>
                     </div>
                     <span className="text-xs text-muted-foreground">{formatDate(record.date)}</span>
                   </div>
@@ -106,16 +93,16 @@ export const GameHistoryDialog = React.memo(function GameHistoryDialog({
             <div className="flex w-full items-center justify-between gap-2">
               <span className="text-sm text-muted-foreground">Clear all history?</span>
               <div className="flex gap-2">
-                <Button size="sm" variant="destructive" onClick={handleClearHistory} className="h-8">Confirm</Button>
-                <Button size="sm" variant="outline" onClick={() => setShowClearConfirm(false)} className="h-8">Cancel</Button>
+                <Button size="sm" variant="destructive" onClick={handleClearHistory} className="h-11">Confirm</Button>
+                <Button size="sm" variant="outline" onClick={() => setShowClearConfirm(false)} className="h-11">Cancel</Button>
               </div>
             </div>
           ) : (
             <>
-              <Button variant="destructive" onClick={() => setShowClearConfirm(true)} size="sm" className="w-full sm:w-auto" disabled={history.length === 0}>
-                Clear History
+              <Button variant="destructive" onClick={() => setShowClearConfirm(true)} size="sm" className="h-11 w-full sm:w-auto" disabled={history.length === 0}>
+                Clear history
               </Button>
-              <Button onClick={onClose} variant="outline" className="w-full sm:w-auto">Close</Button>
+              <Button onClick={onClose} variant="outline" className="h-11 w-full sm:w-auto">Close</Button>
             </>
           )}
         </DialogFooter>

@@ -144,23 +144,27 @@ export interface LeaderboardEntry {
   totalCaptures: number
 }
 
-/** Unicode symbols for each piece type by player */
+/** Unicode symbols for each piece type by player.
+ * Both players use the filled set (U+265A-265F) for consistent cross-platform rendering.
+ * U+FE0E forces text presentation to prevent emoji rendering on Windows.
+ * Visual distinction is handled by CSS classes (chess-piece-white / chess-piece-black).
+ */
 export const PIECE_SYMBOLS: Record<Player, Record<PieceType, string>> = {
   1: {
-    king: '\u2654',
-    queen: '\u2655',
-    rook: '\u2656',
-    bishop: '\u2657',
-    knight: '\u2658',
-    pawn: '\u2659',
+    king: '\u265A\uFE0E',
+    queen: '\u265B\uFE0E',
+    rook: '\u265C\uFE0E',
+    bishop: '\u265D\uFE0E',
+    knight: '\u265E\uFE0E',
+    pawn: '\u265F\uFE0E',
   },
   2: {
-    king: '\u265A',
-    queen: '\u265B',
-    rook: '\u265C',
-    bishop: '\u265D',
-    knight: '\u265E',
-    pawn: '\u265F',
+    king: '\u265A\uFE0E',
+    queen: '\u265B\uFE0E',
+    rook: '\u265C\uFE0E',
+    bishop: '\u265D\uFE0E',
+    knight: '\u265E\uFE0E',
+    pawn: '\u265F\uFE0E',
   },
 }
 

@@ -49,7 +49,7 @@ function createDefaultAchievementState(): AchievementState {
   const state = {} as AchievementState
   for (const id of ALL_ACHIEVEMENT_IDS) {
     const def = ACHIEVEMENT_DEFINITIONS[id]
-    state[id] = { id, name: def.name, description: def.description, icon: def.icon, unlockedAt: undefined }
+    state[id] = { id, name: def.name, description: def.description, unlockedAt: undefined }
   }
   return state
 }
@@ -62,7 +62,7 @@ function isValidAchievementState(data: unknown): data is AchievementState {
     if (!entry || typeof entry !== 'object') return false
     const achievement = entry as Partial<Achievement>
     if (typeof achievement.id !== 'string' || typeof achievement.name !== 'string' ||
-        typeof achievement.description !== 'string' || typeof achievement.icon !== 'string') return false
+        typeof achievement.description !== 'string') return false
     if (achievement.unlockedAt !== undefined &&
         (typeof achievement.unlockedAt !== 'number' || achievement.unlockedAt < 0)) return false
   }

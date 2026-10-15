@@ -1,8 +1,7 @@
 /**
  * Promotion Dialog Component
  *
- * 4-button grid showing queen/rook/bishop/knight Unicode symbols.
- * Cannot be dismissed - must choose a piece.
+ * Four piece choices as a plain row. Cannot be dismissed: a piece must be chosen.
  */
 
 import React from 'react'
@@ -22,8 +21,8 @@ interface PromotionDialogProps {
   onSelect: (piece: PromotionPiece) => void
 }
 
-const PROMOTION_OPTIONS: { type: PromotionPiece; label: string; points: number; recommended?: boolean }[] = [
-  { type: 'queen', label: 'Queen', points: 9, recommended: true },
+const PROMOTION_OPTIONS: { type: PromotionPiece; label: string; points: number }[] = [
+  { type: 'queen', label: 'Queen', points: 9 },
   { type: 'rook', label: 'Rook', points: 5 },
   { type: 'bishop', label: 'Bishop', points: 3 },
   { type: 'knight', label: 'Knight', points: 3 },
@@ -36,31 +35,29 @@ export const PromotionDialog = React.memo(function PromotionDialog({
 }: PromotionDialogProps) {
   return (
     <Dialog open={open}>
-      <DialogContent className="sm:max-w-xs [&>button]:hidden" onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
+      <DialogContent
+        className="sm:max-w-sm"
+        hideClose
+        onPointerDownOutside={e => e.preventDefault()}
+        onEscapeKeyDown={e => e.preventDefault()}
+      >
         <DialogHeader>
-          <DialogTitle className="text-center">Promote Pawn</DialogTitle>
-          <DialogDescription className="text-center">
-            Choose a piece for your promoted pawn
-          </DialogDescription>
+          <DialogTitle>Promote your pawn</DialogTitle>
+          <DialogDescription>Choose the piece it becomes.</DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-4 gap-2 py-4">
-          {PROMOTION_OPTIONS.map(({ type, label, points, recommended }) => (
+        <div className="grid grid-cols-4 gap-2">
+          {PROMOTION_OPTIONS.map(({ type, label, points }) => (
             <button
               key={type}
               onClick={() => onSelect(type)}
-              className={`flex flex-col items-center gap-1 rounded-lg border-2 p-3 transition-all hover:border-amber-500 hover:bg-amber-500/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none ${
-                recommended ? 'border-amber-300 bg-amber-50' : 'border-transparent'
-              }`}
+              className="flex min-h-11 flex-col items-center gap-0.5 rounded-md border border-border p-2 transition-colors hover:border-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label={`Promote to ${label} (${points} points)`}
             >
-              <span className="text-4xl sm:text-5xl">
+              <span className="text-4xl leading-none" style={{ fontFamily: '"Segoe UI Symbol", "Noto Sans Symbols 2", sans-serif' }}>
                 {PIECE_SYMBOLS[player][type]}
               </span>
-              <span className="text-xs font-medium text-muted-foreground">
-                {label}
-              </span>
-              <span className="text-xs text-muted-foreground">{points} pts</span>
+              <span className="text-xs text-muted-foreground">{label}</span>
             </button>
           ))}
         </div>

@@ -21,7 +21,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import type { AnimationSpeed, GameSettings } from '@/hooks/useGameSettings'
-import { ResetIcon } from '@radix-ui/react-icons'
 
 interface SettingsDialogProps {
   open: boolean
@@ -47,12 +46,12 @@ function ToggleSwitch({
   description: string
 }) {
   return (
-    <label className="flex items-center justify-between cursor-pointer group">
+    <label className="group flex min-h-11 cursor-pointer items-center justify-between gap-3">
       <div className="space-y-0.5">
         <div className="text-sm font-medium" id={`${id}-label`}>{label}</div>
         <div className="text-xs text-muted-foreground">{description}</div>
       </div>
-      <div className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary">
+      <div className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-within:ring-2 focus-within:ring-ring">
         <input
           type="checkbox"
           className="peer sr-only"
@@ -62,8 +61,8 @@ function ToggleSwitch({
           role="switch"
           aria-checked={checked}
         />
-        <div className="h-6 w-11 rounded-full bg-muted peer-checked:bg-primary transition-colors" />
-        <div className="absolute left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
+        <div className="h-6 w-11 rounded-full border bg-muted peer-checked:bg-primary transition-colors" />
+        <div className="absolute left-0.5 h-5 w-5 rounded-full bg-foreground shadow transition-transform peer-checked:translate-x-5" />
       </div>
     </label>
   )
@@ -80,20 +79,20 @@ export function SettingsDialog({
 }: SettingsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Settings</DialogTitle>
+          <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
-            Customize your chess gameplay experience
+            Saved on this device.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Animation Speed */}
           <div className="space-y-2">
-            <label htmlFor="animation-speed" className="text-sm font-semibold">Animation Speed</label>
+            <label htmlFor="animation-speed" className="text-sm font-semibold">Animation speed</label>
             <p className="text-xs text-muted-foreground">
-              Control celebration and transition speed
+              How fast pieces move
             </p>
             <Select
               value={settings.animationSpeed}
@@ -105,7 +104,7 @@ export function SettingsDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="off">Off (Instant)</SelectItem>
+                <SelectItem value="off">Off (instant)</SelectItem>
                 <SelectItem value="fast">Fast</SelectItem>
                 <SelectItem value="normal">Normal</SelectItem>
                 <SelectItem value="slow">Slow</SelectItem>
@@ -118,19 +117,11 @@ export function SettingsDialog({
             <h3 className="text-sm font-semibold">Display</h3>
 
             <ToggleSwitch
-              id="celebration"
-              checked={settings.showVictoryCelebration}
-              onChange={checked => onUpdateSetting('showVictoryCelebration', checked)}
-              label="Victory Celebrations"
-              description="Show confetti and effects when you win"
-            />
-
-            <ToggleSwitch
               id="notation"
               checked={settings.showMoveNotation}
               onChange={checked => onUpdateSetting('showMoveNotation', checked)}
-              label="Move Notation"
-              description="Show algebraic notation of moves played"
+              label="Move list"
+              description="Show the moves played under the board"
             />
           </div>
 
@@ -142,8 +133,8 @@ export function SettingsDialog({
               id="reduced-motion"
               checked={isReducedMotion}
               onChange={() => onToggleReducedMotion()}
-              label="Reduce Motion"
-              description="Disable animations and celebrations (respects OS setting)"
+              label="Reduce motion"
+              description="Turn off piece animations (follows your system setting)"
             />
           </div>
 
@@ -152,11 +143,10 @@ export function SettingsDialog({
             <Button
               onClick={onReset}
               variant="outline"
-              className="w-full gap-2"
+              className="h-11 w-full"
               type="button"
             >
-              <ResetIcon className="h-4 w-4" />
-              Reset to Defaults
+              Reset to defaults
             </Button>
           </div>
         </div>
