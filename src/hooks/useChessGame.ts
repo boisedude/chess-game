@@ -22,7 +22,7 @@ import {
   getAllValidMoves,
 } from '@/lib/chessRules'
 import { saveGame, loadSavedGame, clearSavedGame, hasSavedGame } from '@/lib/gameSerialization'
-import { getAIMove } from '@/lib/aiStrategies'
+import { requestAIMove } from '@/lib/aiClient'
 import {
   AI_MOVE_DELAY,
   MOVE_ANIMATION_DURATION,
@@ -50,6 +50,28 @@ function cancellableDelay(ms: number, signal: AbortSignal): Promise<void> {
     }
     signal.addEventListener('abort', onAbort, { once: true })
   })
+}
+
+/** Everything undo restores: the position plus the achievement flags. */
+function snapshotForUndo(s: GameState): UndoState {
+  return {
+    board: s.board,
+    currentPlayer: s.currentPlayer,
+    lastMove: s.lastMove,
+    whiteCount: s.whiteCount,
+    blackCount: s.blackCount,
+    validMoves: s.validMoves,
+    castlingRights: s.castlingRights,
+    enPassantSquare: s.enPassantSquare,
+    halfmoveClock: s.halfmoveClock,
+    fullmoveNumber: s.fullmoveNumber,
+    isInCheck: s.isInCheck,
+    hadQueenCaptured: s.hadQueenCaptured,
+    promotedPawnCount: s.promotedPawnCount,
+    castledThisGame: s.castledThisGame,
+    usedEnPassant: s.usedEnPassant,
+    wasDownByMaterial: s.wasDownByMaterial,
+  }
 }
 
 /** Creates a game state with status='setup' for the welcome screen. */
@@ -182,7 +204,9 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
       aiMoveTimeoutRef.current = setTimeout(async () => {
         aiMoveTimeoutRef.current = null
         try {
-          const aiMove = getAIMove(gameState, 2, gameState.difficulty)
+          const aiMove = await requestAIMove(gameState, 2, gameState.difficulty)
+          // New game, undo, opponent switch or unmount happened while thinking.
+          if (abortController.signal.aborted) return
 
           if (aiMove) {
             setIsAnimating(true)
@@ -205,11 +229,12 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
 
             setIsAnimating(false)
           }
-        } catch (e) {
-          if (e instanceof DOMException && e.name === 'AbortError') return
+        } catch {
+          if (abortController.signal.aborted) return
           setIsAnimating(false)
         } finally {
-          aiMoveScheduledRef.current = false
+          // A stale run must not clear the flag of a newer scheduled move.
+          if (!abortController.signal.aborted) aiMoveScheduledRef.current = false
         }
       }, AI_MOVE_DELAY)
     }
@@ -256,19 +281,7 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
       setGameState(prevState => {
         try {
           const nextState = computeNextGameState(prevState, move)
-          const undoState: UndoState = {
-            board: prevState.board,
-            currentPlayer: prevState.currentPlayer,
-            lastMove: prevState.lastMove,
-            whiteCount: prevState.whiteCount,
-            blackCount: prevState.blackCount,
-            validMoves: prevState.validMoves,
-            castlingRights: prevState.castlingRights,
-            enPassantSquare: prevState.enPassantSquare,
-            halfmoveClock: prevState.halfmoveClock,
-            fullmoveNumber: prevState.fullmoveNumber,
-            isInCheck: prevState.isInCheck,
-          }
+          const undoState = snapshotForUndo(prevState)
           return {
             ...nextState,
             pendingPromotion: null,
@@ -360,19 +373,7 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
             setGameState(prevState => {
               try {
                 const nextState = computeNextGameState(prevState, validMove)
-                const undoState: UndoState = {
-                  board: prevState.board,
-                  currentPlayer: prevState.currentPlayer,
-                  lastMove: prevState.lastMove,
-                  whiteCount: prevState.whiteCount,
-                  blackCount: prevState.blackCount,
-                  validMoves: prevState.validMoves,
-                  castlingRights: prevState.castlingRights,
-                  enPassantSquare: prevState.enPassantSquare,
-                  halfmoveClock: prevState.halfmoveClock,
-                  fullmoveNumber: prevState.fullmoveNumber,
-                  isInCheck: prevState.isInCheck,
-                }
+                const undoState = snapshotForUndo(prevState)
                 return {
                   ...nextState,
                   undoState: nextState.status !== 'playing' ? null : undoState,
@@ -516,6 +517,11 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
         halfmoveClock: undoState.halfmoveClock,
         fullmoveNumber: undoState.fullmoveNumber,
         isInCheck: undoState.isInCheck,
+        hadQueenCaptured: undoState.hadQueenCaptured,
+        promotedPawnCount: undoState.promotedPawnCount,
+        castledThisGame: undoState.castledThisGame,
+        usedEnPassant: undoState.usedEnPassant,
+        wasDownByMaterial: undoState.wasDownByMaterial,
         moveHistory: newMoveHistory,
         positionHistory: prevState.positionHistory.slice(0, -movesToRemove),
         drawReason: undefined,

@@ -17,6 +17,10 @@ function blank(): Board {
   return Array.from({ length: 8 }, () => Array(8).fill(null))
 }
 
+jest.mock('@/lib/createAIWorker', () => ({
+  createAIWorker: () => { throw new Error('no worker in jest') },
+}))
+
 describe('hook: undo, AI scheduling, opponent changes', () => {
   beforeEach(() => {
     jest.useFakeTimers()
@@ -45,6 +49,22 @@ describe('hook: undo, AI scheduling, opponent changes', () => {
     act(() => result.current.undoMove())
     expect(result.current.gameState.moveHistory).toHaveLength(0)
     expect(result.current.gameState.positionHistory).toHaveLength(1)
+  })
+
+  it('undo restores the achievement flags (no farming by undo and replay)', async () => {
+    const { result } = renderHook(() => useChessGame('easy'))
+    act(() => result.current.startGame('pvp', 'easy'))
+    const line: [[number, number], [number, number]][] = [
+      [[6, 4], [4, 4]], [[1, 4], [3, 4]], [[7, 6], [5, 5]],
+      [[0, 1], [2, 2]], [[7, 5], [4, 2]], [[0, 5], [3, 2]],
+    ]
+    for (const [a, b] of line) await clickMove(result, a, b)
+    expect(result.current.gameState.castledThisGame).toBe(false)
+    await clickMove(result, [7, 4], [7, 6]) // castle kingside
+    expect(result.current.gameState.castledThisGame).toBe(true)
+    act(() => result.current.undoMove())
+    expect(result.current.gameState.castledThisGame).toBe(false)
+    expect(result.current.gameState.moveHistory).toHaveLength(6)
   })
 
   it('the AI still moves when game state is touched while it is about to move', async () => {

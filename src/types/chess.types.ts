@@ -86,6 +86,12 @@ export interface UndoState {
   halfmoveClock: number
   fullmoveNumber: number
   isInCheck: boolean
+  /** Achievement flags as they were before the undone moves, so undo cannot farm them. */
+  hadQueenCaptured: boolean
+  promotedPawnCount: number
+  castledThisGame: boolean
+  usedEnPassant: boolean
+  wasDownByMaterial: boolean
 }
 
 /** Draw reason for display */

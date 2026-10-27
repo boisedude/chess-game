@@ -18,6 +18,7 @@ export default defineConfig({
     port: 3003,
     open: true,
   },
+  worker: { format: 'es' },
   build: {
     outDir: 'dist',
     sourcemap: false, // Disabled for production - protects source code and reduces bundle size
