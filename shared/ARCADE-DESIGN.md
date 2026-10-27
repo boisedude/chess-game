@@ -100,7 +100,7 @@ for valid moves), no confetti, no bouncing avatars, no gradient shifts. Respect
 
 ## Do not
 
-- Do not change rules, AI, or the `@shared/arcadeRecord` wiring.
+- Do not change rules or AI.
 - Do not add dependencies. Icons come from `@shared/icons`; add an icon there if one is missing.
 - Do not keep a per-game page gradient or per-game accent colour.
 - Do not use the character colours for buttons or text; they are the avatar ring only.

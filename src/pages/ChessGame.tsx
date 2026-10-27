@@ -38,7 +38,6 @@ import { useGameAudio } from '@/hooks/useGameAudio'
 import { useBackgroundMusic } from '@/hooks/useBackgroundMusic'
 import { useCharacterSelection } from '@/hooks/useCharacterSelection'
 import { useBentleyStats } from '@/hooks/useBentleyStats'
-import { recordPlayerBeatBentley, recordBentleyBeatPlayer } from '@shared/arcadeRecord'
 import { useAchievements } from '@/hooks/useAchievements'
 import type { AchievementContext } from '@/hooks/useAchievements'
 import { useGameHistory } from '@/hooks/useGameHistory'
@@ -203,7 +202,6 @@ export function ChessGame() {
 
             if (gameState.difficulty === 'hard') {
               recordLocalBentleyWin(margin, totalCaptures, isPerfect)
-              void recordPlayerBeatBentley()
             }
           }
         } else if (gameState.winner === 2) {
@@ -216,7 +214,6 @@ export function ChessGame() {
 
             if (gameState.difficulty === 'hard') {
               recordLocalBentleyLoss(margin, totalCaptures)
-              void recordBentleyBeatPlayer()
             }
           }
         }
