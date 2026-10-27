@@ -24,13 +24,15 @@ import { BOARD_SIZE, PIECE_VALUES } from '@/types/chess.types'
 import {
   getAllValidMoves,
   applyMove,
-  checkGameOver,
   hashBoard,
+  hasInsufficientMaterial,
+  isInCheck,
   isSquareAttacked,
   findKing,
   updateCastlingRights,
   getNewEnPassant,
 } from './chessRules'
+import { DRAW_MOVE_LIMIT, REPETITION_DRAW_COUNT } from './gameConstants'
 import { getBookMove } from './openingBook'
 
 // ============================================================
@@ -461,7 +463,7 @@ function evaluateBoard(
 // Move Ordering (for alpha-beta efficiency)
 // ============================================================
 
-function orderMoves(board: Board, moves: ValidMove[], _player: Player): ValidMove[] {
+function orderMoves(board: Board, moves: ValidMove[]): ValidMove[] {
   return moves.sort((a, b) => {
     let scoreA = 0
     let scoreB = 0
@@ -529,6 +531,20 @@ function clearTT(): void {
 const MAX_QUIESCENCE_DEPTH = 8
 
 /**
+ * Mobility needs two full legal-move generations per evaluation, which dominates the cost of
+ * the thousands of stand-pat evaluations in quiescence. Quiescence uses the same weights minus mobility.
+ */
+const quietWeightsCache = new WeakMap<EvalWeights, EvalWeights>()
+function quietWeights(weights: EvalWeights): EvalWeights {
+  let quiet = quietWeightsCache.get(weights)
+  if (!quiet) {
+    quiet = { ...weights, mobility: 0 }
+    quietWeightsCache.set(weights, quiet)
+  }
+  return quiet
+}
+
+/**
  * Quiescence search: after main search reaches depth 0, continue searching
  * captures only until a quiet position is reached. Prevents horizon effect.
  */
@@ -561,7 +577,7 @@ function quiescence(
 
   // Only search captures and promotions
   moves = moves.filter((m) => m.isCapture || m.isPromotion)
-  moves = orderMoves(board, moves, currentPlayer)
+  moves = orderMoves(board, moves)
 
   if (isMaximizing) {
     for (const move of moves) {
@@ -598,6 +614,12 @@ function quiescence(
 // Minimax with Alpha-Beta Pruning + TT + Quiescence
 // ============================================================
 
+/** Wall-clock budget for the hard search so phones never freeze; depth 1 always completes. */
+const SEARCH_TIME_BUDGET_MS = 1500
+let searchDeadline = 0
+let nodeCounter = 0
+class SearchTimeout extends Error {}
+
 function minimax(
   board: Board,
   depth: number,
@@ -613,17 +635,25 @@ function minimax(
   useOrdering: boolean,
   useQuiescence: boolean,
 ): number {
-  // Check game over
+  if (searchDeadline && (++nodeCounter & 127) === 0 && Date.now() > searchDeadline) throw new SearchTimeout()
+
+  // Generate legal moves once: they decide mate/stalemate here and drive the search below.
   const currentPlayer = isMaximizing ? player : (player === 1 ? 2 : 1) as Player
-  const gameOver = checkGameOver(board, currentPlayer, castlingRights, enPassantSquare, halfmoveClock, positionHistory)
-  if (gameOver.isOver) {
-    if (gameOver.winner === player) return 100000 + depth * 100
-    if (gameOver.winner === (player === 1 ? 2 : 1)) return -100000 - depth * 100
-    return 0 // Draw
+  let moves = getAllValidMoves(board, currentPlayer, castlingRights, enPassantSquare)
+  if (moves.length === 0) {
+    if (isInCheck(board, currentPlayer)) {
+      // Checkmate: prefer faster mates (higher remaining depth) and slower losses.
+      return currentPlayer === player ? -100000 - depth * 100 : 100000 + depth * 100
+    }
+    return 0 // Stalemate
   }
+  if (halfmoveClock >= DRAW_MOVE_LIMIT || hasInsufficientMaterial(board)) return 0
+  const currentHash = hashBoard(board, currentPlayer, castlingRights, enPassantSquare)
+  let seen = 0
+  for (const h of positionHistory) if (h === currentHash && ++seen >= REPETITION_DRAW_COUNT) return 0
 
   // Transposition table lookup
-  const ttKey = hashBoard(board, currentPlayer, castlingRights, enPassantSquare)
+  const ttKey = currentHash
   if (useOrdering) { // Only use TT for hard difficulty (which uses ordering)
     const ttEntry = transpositionTable.get(ttKey)
     if (ttEntry && ttEntry.depth >= depth) {
@@ -636,15 +666,13 @@ function minimax(
 
   if (depth === 0) {
     if (useQuiescence) {
-      return quiescence(board, alpha, beta, player, isMaximizing, castlingRights, enPassantSquare, weights, 0)
+      return quiescence(board, alpha, beta, player, isMaximizing, castlingRights, enPassantSquare, quietWeights(weights), 0)
     }
     return evaluateBoard(board, player, castlingRights, enPassantSquare, weights)
   }
 
-  let moves = getAllValidMoves(board, currentPlayer, castlingRights, enPassantSquare)
-
   if (useOrdering) {
-    moves = orderMoves(board, moves, currentPlayer)
+    moves = orderMoves(board, moves)
   }
 
   const origAlpha = alpha
@@ -737,30 +765,48 @@ export function getAIMove(state: GameState, player: Player, difficulty: Difficul
     return moves[Math.floor(Math.random() * moves.length)]
   }
 
-  let bestMove = moves[0]
-  let bestScore = -Infinity
+  const orderedMoves = useOrdering ? orderMoves(state.board, [...moves]) : moves
 
-  const orderedMoves = useOrdering ? orderMoves(state.board, [...moves], player) : moves
+  const searchRoot = (searchDepth: number): ValidMove => {
+    let bestMove = orderedMoves[0]
+    let bestScore = -Infinity
+    for (const move of orderedMoves) {
+      const newBoard = applyMove(state.board, move)
+      const newCastling = updateCastlingRights(state.castlingRights, state.board, move)
+      const newEnPassant = getNewEnPassant(state.board, move)
+      const piece = state.board[move.from.row][move.from.col]
+      const newHalfmove = (piece && piece.type === 'pawn') || move.isCapture ? 0 : state.halfmoveClock + 1
+      const hash = hashBoard(newBoard, (player === 1 ? 2 : 1) as Player, newCastling, newEnPassant)
 
-  for (const move of orderedMoves) {
-    const newBoard = applyMove(state.board, move)
-    const newCastling = updateCastlingRights(state.castlingRights, state.board, move)
-    const newEnPassant = getNewEnPassant(state.board, move)
-    const piece = state.board[move.from.row][move.from.col]
-    const newHalfmove = (piece && piece.type === 'pawn') || move.isCapture ? 0 : state.halfmoveClock + 1
-    const hash = hashBoard(newBoard, (player === 1 ? 2 : 1) as Player, newCastling, newEnPassant)
+      const score = minimax(
+        newBoard, searchDepth - 1, -Infinity, Infinity, false, player,
+        newCastling, newEnPassant, newHalfmove, [...state.positionHistory, hash],
+        weights, useOrdering, useQuiescence,
+      )
 
-    const score = minimax(
-      newBoard, depth - 1, -Infinity, Infinity, false, player,
-      newCastling, newEnPassant, newHalfmove, [...state.positionHistory, hash],
-      weights, useOrdering, useQuiescence,
-    )
-
-    if (score > bestScore) {
-      bestScore = score
-      bestMove = move
+      if (score > bestScore) {
+        bestScore = score
+        bestMove = move
+      }
     }
+    return bestMove
   }
 
-  return bestMove
+  if (!useOrdering) return searchRoot(depth)
+
+  // Hard: iterative deepening inside a time budget. The previous depth's best move is the fallback.
+  // Root order stays fixed (captures and promotions first) so equal scores resolve the same way.
+  let best = searchRoot(1)
+  searchDeadline = Date.now() + SEARCH_TIME_BUDGET_MS
+  nodeCounter = 0
+  try {
+    for (let d = 2; d <= depth; d++) {
+      best = searchRoot(d)
+    }
+  } catch (e) {
+    if (!(e instanceof SearchTimeout)) throw e
+  } finally {
+    searchDeadline = 0
+  }
+  return best
 }

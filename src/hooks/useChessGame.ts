@@ -180,6 +180,7 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
       animationAbortRef.current = abortController
 
       aiMoveTimeoutRef.current = setTimeout(async () => {
+        aiMoveTimeoutRef.current = null
         try {
           const aiMove = getAIMove(gameState, 2, gameState.difficulty)
 
@@ -214,9 +215,11 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
     }
 
     return () => {
+      // The move has not started yet: unschedule it so the next run can reschedule.
       if (aiMoveTimeoutRef.current) {
         clearTimeout(aiMoveTimeoutRef.current)
         aiMoveTimeoutRef.current = null
+        aiMoveScheduledRef.current = false
       }
     }
   }, [
@@ -438,7 +441,12 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
   }, [cancelAnimations])
 
   const changeDifficulty = useCallback((newDifficulty: Difficulty) => {
-    setGameState(prevState => ({ ...prevState, difficulty: newDifficulty }))
+    // The opponent is fixed once a game has begun; the page starts a new game instead.
+    setGameState(prevState =>
+      prevState.status === 'playing' && prevState.moveHistory.length > 0
+        ? prevState
+        : { ...prevState, difficulty: newDifficulty }
+    )
   }, [])
 
   const changeMode = useCallback((newMode: GameMode) => {
@@ -509,6 +517,8 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
         fullmoveNumber: undoState.fullmoveNumber,
         isInCheck: undoState.isInCheck,
         moveHistory: newMoveHistory,
+        positionHistory: prevState.positionHistory.slice(0, -movesToRemove),
+        drawReason: undefined,
         undoState: null,
         pendingPromotion: null,
       }

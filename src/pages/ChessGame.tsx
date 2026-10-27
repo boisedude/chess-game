@@ -338,9 +338,26 @@ export function ChessGame() {
 
   const handleDifficultyChange = useCallback(
     (difficulty: 'easy' | 'medium' | 'hard') => {
-      changeDifficulty(difficulty)
+      if (isSetup) {
+        changeDifficulty(difficulty)
+        return
+      }
+      if (difficulty === gameState.difficulty) return
+      // The opponent cannot change inside a game, so the record stays honest.
+      // Switching mid-game ends it (no result is recorded) and starts a fresh one.
+      if (
+        gameState.status === 'playing' &&
+        gameState.moveHistory.length > 0 &&
+        !window.confirm('Change opponent? This ends the current game and starts a new one.')
+      ) {
+        return
+      }
+      setVictoryDialogDismissed(false)
+      gameEndHandledRef.current = false
+      gameStartTimeRef.current = Date.now()
+      startGame(gameState.mode, difficulty)
     },
-    [changeDifficulty]
+    [isSetup, changeDifficulty, startGame, gameState.difficulty, gameState.mode, gameState.status, gameState.moveHistory.length]
   )
 
   const handleModeChange = useCallback(

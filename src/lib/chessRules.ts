@@ -68,7 +68,8 @@ function inBounds(row: number, col: number): boolean {
 }
 
 function cloneBoard(board: Board): Board {
-  return board.map(row => row.map(cell => (cell ? { ...cell } : null)))
+  // Pieces are never mutated in place, so rows are copied and piece objects shared.
+  return board.map(row => row.slice())
 }
 
 function opponent(player: Player): Player {
