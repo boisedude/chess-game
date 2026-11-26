@@ -95,7 +95,7 @@ export function MoreMenu({ items, label = 'More', disabled = false }: MoreMenuPr
         <ChevronDownIcon size={16} />
       </button>
       {open && (
-        <div id={menuId} ref={listRef} className="arcade-menu-list" role="menu" aria-label={label} onKeyDown={onListKeyDown}>
+        <div id={menuId} ref={listRef} className="arcade-menu-list" role="menu" tabIndex={-1} aria-label={label} onKeyDown={onListKeyDown}>
           {shown.map((item) => (
             <div key={item.label} role="none">
               {item.separated && <div className="arcade-menu-rule" role="separator" />}

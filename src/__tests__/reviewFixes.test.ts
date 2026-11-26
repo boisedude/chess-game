@@ -17,24 +17,24 @@ function blank(): Board {
   return Array.from({ length: 8 }, () => Array(8).fill(null))
 }
 
-jest.mock('@/lib/createAIWorker', () => ({
+vi.mock('@/lib/createAIWorker', () => ({
   createAIWorker: () => { throw new Error('no worker in jest') },
 }))
 
 describe('hook: undo, AI scheduling, opponent changes', () => {
   beforeEach(() => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
     localStorage.clear()
   })
   afterEach(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   async function clickMove(result: { current: ReturnType<typeof useChessGame> }, a: [number, number], b: [number, number]) {
     await act(async () => { await result.current.handleSquareClick(a[0], a[1]) })
     await act(async () => {
       const p = result.current.handleSquareClick(b[0], b[1])
-      await jest.advanceTimersByTimeAsync(2000)
+      await vi.advanceTimersByTimeAsync(2000)
       await p
     })
   }
@@ -43,7 +43,7 @@ describe('hook: undo, AI scheduling, opponent changes', () => {
     const { result } = renderHook(() => useChessGame('easy'))
     act(() => result.current.startGame('pvc', 'easy'))
     await clickMove(result, [6, 4], [4, 4])
-    await act(async () => { await jest.advanceTimersByTimeAsync(3000) })
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
     expect(result.current.gameState.moveHistory).toHaveLength(2)
     expect(result.current.gameState.positionHistory).toHaveLength(3)
     act(() => result.current.undoMove())
@@ -73,12 +73,12 @@ describe('hook: undo, AI scheduling, opponent changes', () => {
     await act(async () => { await result.current.handleSquareClick(6, 4) })
     await act(async () => {
       const p = result.current.handleSquareClick(4, 4)
-      await jest.advanceTimersByTimeAsync(400)
+      await vi.advanceTimersByTimeAsync(400)
       await p
     })
     // AI is waiting out its pre-move delay; something re-renders the state
     act(() => result.current.changeMode('pvc'))
-    await act(async () => { await jest.advanceTimersByTimeAsync(5000) })
+    await act(async () => { await vi.advanceTimersByTimeAsync(5000) })
     expect(result.current.gameState.currentPlayer).toBe(1)
     expect(result.current.gameState.moveHistory).toHaveLength(2)
   })

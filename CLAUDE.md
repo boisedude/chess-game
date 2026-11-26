@@ -7,16 +7,15 @@
 ```bash
 npm run dev          # Dev server on port 3003
 npm run build        # TypeScript check + production build
-npm run test         # Jest unit tests
-npm run test:watch   # Jest watch mode
+npm run test         # Vitest unit tests (runs once)
 npm run test:e2e     # Playwright E2E tests (chromium, port 3003)
-npm run lint         # ESLint
+npm run lint         # oxlint
 npm run type-check   # TypeScript only
 ```
 
 ## Architecture Overview
 
-Static SPA chess game: React 19 + TypeScript 5.9 + Vite 7 + Tailwind CSS + shadcn/ui. No backend. HashRouter for static deployment at `www.mcooper.com/chess`.
+Static SPA chess game: React 19 + TypeScript 7 + Vite 7 + Tailwind CSS + shadcn/ui. No backend. HashRouter for static deployment at `www.mcooper.com/chess`.
 
 ### Core Data Flow
 
@@ -157,7 +156,7 @@ App (ErrorBoundary)
 ### Running Tests
 ```bash
 npm test                              # All unit tests
-npx jest --testPathPatterns=chessRules # Specific test file
+npx vitest run chessRules # Specific test file
 npm run test:e2e                      # Playwright (starts dev server)
 npm run test:e2e:ui                   # Playwright with UI
 ```

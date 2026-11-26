@@ -14,22 +14,22 @@ const localStorageMock = (() => {
   let store: Record<string, string> = {}
 
   return {
-    getItem: jest.fn((key: string): string | null => {
+    getItem: vi.fn((key: string): string | null => {
       return store[key] || null
     }),
-    setItem: jest.fn((key: string, value: string): void => {
+    setItem: vi.fn((key: string, value: string): void => {
       store[key] = value
     }),
-    removeItem: jest.fn((key: string): void => {
+    removeItem: vi.fn((key: string): void => {
       delete store[key]
     }),
-    clear: jest.fn((): void => {
+    clear: vi.fn((): void => {
       store = {}
     }),
     get length() {
       return Object.keys(store).length
     },
-    key: jest.fn((index: number): string | null => {
+    key: vi.fn((index: number): string | null => {
       const keys = Object.keys(store)
       return keys[index] || null
     }),
@@ -43,7 +43,7 @@ Object.defineProperty(window, 'localStorage', {
 describe('gameSerialization', () => {
   beforeEach(() => {
     localStorageMock.clear()
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   describe('saveGame', () => {

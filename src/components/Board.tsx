@@ -175,6 +175,7 @@ export const Board = React.memo(function Board({
           className="board-grid"
           role="grid"
           aria-label="Chess game board"
+          tabIndex={-1}
           onKeyDown={handleGridKeyDown}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}

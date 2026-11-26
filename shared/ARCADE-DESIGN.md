@@ -2,7 +2,13 @@
 
 Eight games, one table. Each board keeps its own material and its own pieces; everything
 around the board is the same across the arcade, so a player moving from chess to mancala
-feels they stayed in one room. The tokens and shell classes live in `shared/arcade.css`.
+feels they stayed in one room. The tokens and shell classes live in `shared/arcade.css`,
+the control-row menu in `shared/MoreMenu.tsx`, the icons in `shared/icons.tsx`.
+
+The reference implementation is `chess/`. When in doubt, open its files and copy:
+`src/pages/ChessGame.tsx` (shell, score strip), `src/components/GameControls.tsx` (control
+row), `src/components/Board.tsx` and `Cell.tsx` (slide on move, hint ring, last move),
+`src/index.css` (board material, markers).
 
 ## The one memorable thing
 
@@ -18,11 +24,11 @@ them up without edits):
 | Role | Value | Use |
 |---|---|---|
 | background | `#14212b` | the table |
-| card / popover | `#1b2b36` | dialogs, chip, panels |
+| card / popover | `#1b2b36` | dialogs, chip, panels, the More menu |
 | border | `#2b3f4c` | hairlines |
 | foreground | `#e6ebe8` | text |
 | muted-foreground | `#9aacb3` | secondary text, labels |
-| primary (sagebrush) | `#b5ca9b` | the single primary button, valid-move hints, game-over state |
+| primary (sagebrush) | `#b5ca9b` | the single primary button, the hint ring, the last move, game-over state |
 | destructive | `#f2877d` | resign, reset-stats confirmations only |
 | bella / coop / bentley | amber `#f59e0b`, blue `#3b82f6`, purple `#a855f7` | the ring around the opponent avatar, nothing else |
 
@@ -30,111 +36,132 @@ Dark only. No light mode in the games.
 
 ## Type
 
-Encode Sans everywhere (loaded by `arcade.css`). The game name in the top bar uses
-`.arcade-display` (expanded width, 800). Body text 400 or 500. Numbers (scores, counts,
-clocks, move lists) use tabular figures, which the body rule already sets. No second
-typeface, no monospace except a chess move list if it already uses one.
+Encode Sans everywhere (loaded by a `<link>` in each `index.html`). The game name in the top
+bar uses `.arcade-display`. Body text 400 or 500. Numbers use tabular figures, which the
+body rule already sets. No second typeface, no monospace except the chess move list.
 
-Line length under 70 characters in dialogs. Sentence case everywhere. No all-caps labels,
-no tracked-out eyebrows.
+Line length under 70 characters in dialogs. Sentence case everywhere. No all-caps labels.
 
 ## Layout
 
 ```
 +-------------------------------------------------------------------+
-| <- Arcade      Checkers                 (o) Bentley  [sound] [?]   |   top bar, 1px rule under
+| <- Arcade      Checkers                 (o) Bentley  [sound] [?]   |   top bar
 +-------------------------------------------------------------------+
 |                                                                   |
-|   You 12                     Your turn                 Bentley 12 |   score strip
-|                                                                   |
+|   12                       Your turn                     12 (o)   |   score strip
+|   You                                                 Bentley     |
 |            +---------------------------------------+              |
 |            |                                       |              |
-|            |                BOARD                  |              |   max 640px, centred
+|            |                BOARD                  |              |   as large as fits
 |            |                                       |              |
 |            +---------------------------------------+              |
 |                                                                   |
-|        [ New game ]  [ Undo ]  [ Stats ]  [ How to play ]         |   controls
-|                                                                   |
+|            [ New game ]  [ Undo ]  [ Hint ]  [ More v ]           |   one row
 +-------------------------------------------------------------------+
 ```
 
-- Top bar (`.arcade-topbar`): left, a quiet "Arcade" link with a left arrow icon back to
+- **One column, sized by the viewport.** `--arcade-col` is the width of the score strip,
+  the board and the controls. It is the largest square that fits once the top bar, score
+  strip and one control row have their room, capped at 760 px, so the board fills a laptop
+  screen and the whole game fits a phone without scrolling. `.arcade-board`,
+  `.arcade-score` and `.arcade-controls` already use it. Do not give the board a fixed
+  pixel size or a smaller max-width; size everything inside it in percentages or `fr`.
+  A game with extra rows above or below the board (chess has captured pieces and a move
+  list) overrides `--arcade-col` on `.arcade-stage` with a larger subtraction. A board much
+  wider than tall (mancala) sets `data-shape="wide"` on `.arcade-stage`.
+- **Top bar** (`.arcade-topbar`): left, a quiet "Arcade" link with a left arrow back to
   `https://www.mcooper.com/arcade/`; centre, the game name; right, the opponent chip
-  (`.arcade-chip` with `data-character`), then icon buttons for sound and help. On phones
-  the game name may drop and the chip stays.
-- Score strip (`.arcade-score`): your count on the left, the opponent's on the right, the
-  turn pill (`.arcade-turn`) in the middle with `data-active` = `you` | `opponent` |
-  `over`. Text reads "Your turn", "Bentley is thinking", "You won", "Bentley won", "Draw".
-  Games without a running count (tic-tac-toe, gomoku) show wins this session instead, or
-  leave the sides empty and keep the pill.
-- Board (`.arcade-board`): the game's existing board component, restyled only where its
-  current chrome fights the table (neon borders, glossy plastic, bright gradients, pastel
-  frames). Wood, felt and stone are welcome; keep them matte.
-- Controls (`.arcade-controls`): shadcn buttons. Exactly one `default` (primary) button,
-  "New game". Everything else `outline` or `ghost`. The opponent selector lives in the
-  chip: clicking the chip opens the existing select (or a small popover) to change
-  opponent. Mode (vs AI / two players) moves into the same menu or a ghost button; it is
-  not a labelled form row.
-- Phones (390px): the same order, board full width with 1rem gutters, controls wrap to two
-  rows at most. No full-width stacked buttons, no horizontal scroll, tap targets 44px.
+  (`.arcade-chip`, the trigger of the opponent select), then icon buttons for sound and
+  help. On phones the game name drops and the chip stays.
+- **Score strip** (`.arcade-score`): your count on the left; the turn pill
+  (`.arcade-turn`, `data-active` = `you` | `opponent` | `over`) in the middle; on the right
+  the opponent's count and name with their portrait: wrap that side in `.arcade-player`
+  and add `<img class="arcade-avatar" data-character={character.id}>`. No portrait in
+  two-player mode. While the opponent thinks the pill reads "Bentley is thinking" and the
+  shared CSS steps three dots through it. Games without a running count show wins and
+  losses from local stats.
+- **Controls** (`.arcade-controls`): exactly one row on every screen, in this order:
+  "New game" (the only `default` button), "Undo" (`outline`), "Hint" (`outline`, only
+  against a character), then `<MoreMenu>` holding everything else: How to play, Stats,
+  Achievements, Game history, Settings, mode changes, and Resign last and `destructive`.
+  Buttons are `h-11 px-3.5 sm:px-5`. No second row of ghost buttons, no icon-only controls
+  in this row.
+- **Phones (390 px)**: same order, board full width with 1 rem gutters, one control row,
+  no horizontal scroll, tap targets 44 px.
+
+## Boards and pieces
+
+Each game keeps its own material. All of them follow the same physical rules:
+
+- **Matte, with depth.** A board is an object: a frame or edge a shade darker than the
+  playing surface, a hairline between frame and surface, the shared drop shadow
+  (`--arcade-board-shadow`). Surfaces may carry a very quiet gradient or grain. Nothing
+  glossy, no neon, no glow.
+- **Pieces are lit from above.** A disc, stone or man gets a soft radial or linear gradient
+  (lighter at the top left), a thin darker rim, and a short contact shadow under it. Flat
+  single-colour circles are not finished. Draw pieces in CSS or inline SVG, never with
+  font glyphs or emoji, so they look the same on every device.
+- **Colours that hold on the table.** Light pieces are warm ivory (`#f6f0e2`), dark pieces
+  slate black (`#2c3136`), reds are brick rather than fire-engine. The two sides must be
+  distinguishable without colour (shape, rim or value).
+- **The player always knows what just happened.** The last move is marked (a sagebrush
+  wash on its squares or a small sagebrush dot on the stone or disc). Legal targets for a
+  selected piece are marked with a dark translucent dot, captures with a ring. The winning
+  line or the pieces that decided the game are marked when the game ends.
+- **Hint.** The Hint button marks the engine's suggestion with a static ring: use
+  `.arcade-hint` (sagebrush between two slate keylines, legible on any board colour) on
+  the squares, pit, column or point involved. It clears when the position changes.
+
+## Motion
+
+Motion answers a move and nothing else.
+
+- A moved piece travels: slides (chess, checkers, morris), drops under gravity
+  (connect 4), flips (othello), is sown stone by stone (mancala), or is set down with a
+  short scale-in (gomoku, tic-tac-toe). 150 to 250 ms, ease-out; mancala sowing may take
+  longer because the count is the point.
+- The position changes first and the animation plays on the new position. Do not hold the
+  game state back while an animation runs, and do not block input for longer than the
+  animation.
+- The opponent's reply lands 0.6 to 1.5 s after the player's move: the search time is the
+  pause. Do not add a fixed delay on top of a search that already took its time.
+- Nothing idles: no pulsing hints, no bouncing avatars, no confetti, no gradient shifts.
+  The three thinking dots in the turn pill are the only loop.
+- Respect `prefers-reduced-motion` (the shared CSS shortens everything).
 
 ## Copy
 
-- Game name only in the top bar: "Checkers", not "Checkers at Coop's Arcade", no
-  "Challenge Coop", no "Can you beat him?", no "Ancient Strategy Game".
-- Buttons name the action: "New game", "Undo", "Resign", "Stats", "How to play",
-  "Settings". No emoji anywhere in the interface; icons come from `shared/icons.tsx` (`@shared/icons`), inline SVG with no dependency.
+- Game name only in the top bar. No "Challenge Coop", no taglines.
+- Buttons name the action: "New game", "Undo", "Hint", "More". No emoji anywhere in the
+  interface; icons come from `@shared/icons`.
 - Opponent text uses the character's name, never "AI" or "Computer".
 - Game over dialog: the character's win or lose art (from `shared/characters.ts`), a
   one-line result ("Bentley won", "You beat Bentley", "Draw"), one catchphrase from the
   character in the muted colour, then "Play again" (primary) and "Close" (ghost). Stats
-  for the game go below in the muted colour as a single line, not a grid of tiles.
-- Tutorials: keep the content, restyle as a plain dialog. No "Tutorial by" or "Designed by".
-
-## Motion
-
-Pieces may animate when placed, dropped, captured or flipped, because that answers the
-player's action. Nothing else moves: no pulsing hints (use a static sagebrush dot or ring
-for valid moves), no confetti, no bouncing avatars, no gradient shifts. Respect
-`prefers-reduced-motion` (the shared CSS already shortens everything).
+  for the game go below in the muted colour as a single line.
+- Confirmations (resign, switch opponent mid-game, reset stats) use the game's Dialog,
+  not `window.confirm`.
+- Any claim about how a character plays must be true of the code.
 
 ## Do not
 
-- Do not change rules or AI.
-- Do not add dependencies. Icons come from `@shared/icons`; add an icon there if one is missing.
+- Do not add dependencies. Icons come from `@shared/icons`; the menu is `@shared/MoreMenu`.
 - Do not keep a per-game page gradient or per-game accent colour.
 - Do not use the character colours for buttons or text; they are the avatar ring only.
 - Do not render "Your Opponent:" or "Mode:" as labelled form rows on the page.
 
-## Mechanics (learned on the tic-tac-toe pilot; do these exactly)
+## Mechanics
 
-The pilot is `tictactoe/`. When in doubt, open its files and copy.
-
-1. **Stylesheet.** In `src/index.css`, right after `@import "tailwindcss";` add
-   `@import "../../shared/arcade.css";`. Delete the game's own `:root` and `.dark` token
-   blocks and any keyframes you no longer use. Keep the `@theme` block that maps the HSL
-   variables. `arcade.css` is layered (`base` and `components`), so Tailwind utilities on
-   the same element still win.
-2. **Font.** In `index.html` `<head>`, remove any other Google Fonts links and add:
-   ```html
-   <link rel="preconnect" href="https://fonts.googleapis.com" />
-   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Encode+Sans:wdth,wght@75..125,300..800&display=swap" />
-   ```
-3. **React resolution for `@shared/icons`.** The shared folder has no `node_modules`, so
-   add to `tsconfig.json` `compilerOptions.paths`:
-   `"react": ["./node_modules/@types/react"], "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"]`;
-   to `jest.config.ts` `moduleNameMapper`:
-   `'^react$': '<rootDir>/node_modules/react', '^react/jsx-runtime$': '<rootDir>/node_modules/react/jsx-runtime'`;
-   and to `vite.config.ts` `resolve`: `dedupe: ['react', 'react-dom']`.
-4. **Dialogs.** Copy `tictactoe/src/components/ui/dialog.tsx` over the game's own
-   (`w-[calc(100%-2rem)]`, `max-h-[calc(100dvh-2rem)]`, card colour, a 44px close target,
-   and a `hideClose` prop for the game-over dialog, whose "Close" button replaces the X).
-5. **Opponent chip.** Copy `tictactoe/src/components/OpponentChip.tsx`: the chip is the
-   trigger of the game's existing shadcn Select. Keep `[&>span]:line-clamp-none` on the
-   trigger or the name gets cut on phones.
-6. **Score strip when there is no running count.** Use the game's persistent local stats
-   (wins on your side, losses on the opponent's side). Tic-tac-toe does this.
-7. **Check with a screenshot** at 1280x900 and 390x844 before reporting, and fix what
-   looks off. Measure: document width 390 at 390, every control at least 44px tall, no
-   emoji in page text, nothing reads "Challenge".
+1. **Stylesheet.** In `src/index.css`, right after `@import "tailwindcss";` comes
+   `@import "../shared/arcade.css";`. Keep the `@theme` block that maps the HSL variables.
+   `arcade.css` is layered (`base` and `components`), so Tailwind utilities on the same
+   element still win, and so does unlayered CSS in the game's own `index.css`.
+2. **React resolution for the shared folder.** It has no `node_modules`, so
+   `tsconfig.json` maps `react` and `react/jsx-runtime` to the game's `@types/react`, and
+   `vite.config.ts` has `resolve.dedupe: ['react', 'react-dom']`.
+3. **Dialogs.** `src/components/ui/dialog.tsx` is the tic-tac-toe version
+   (`w-[calc(100%-2rem)]`, `max-h-[calc(100dvh-2rem)]`, a 44 px close target, `hideClose`).
+4. **Check with screenshots** at 1280x900 and 390x844 before reporting, and fix what looks
+   off. Measure: document width 390 at 390, one control row, every control at least 44 px
+   tall, no emoji in page text, the whole game visible without scrolling at both sizes.
