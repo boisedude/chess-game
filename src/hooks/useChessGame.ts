@@ -418,7 +418,6 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
 
   const resign = useCallback(() => {
     if (gameState.status !== 'playing') return
-    if (!window.confirm('Are you sure you want to resign?')) return
     cancelAnimations()
     setSelectedPiece(null)
     setHighlightedSquares([])
@@ -435,7 +434,6 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
   const offerDraw = useCallback(() => {
     if (gameState.status !== 'playing') return
     if (gameState.mode !== 'pvp') return
-    if (!window.confirm('Offer a draw?')) return
     cancelAnimations()
     setSelectedPiece(null)
     setHighlightedSquares([])

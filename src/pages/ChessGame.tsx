@@ -29,6 +29,7 @@ import { PromotionDialog } from '@/components/PromotionDialog'
 import { CapturedPieces } from '@/components/CapturedPieces'
 import { MoveNotation } from '@/components/MoveNotation'
 import { SettingsDialog } from '@/components/SettingsDialog'
+import { ConfirmDialog, type ConfirmRequest } from '@/components/ConfirmDialog'
 import { Button } from '@/components/ui/button'
 import { OpponentChip } from '@/components/OpponentChip'
 import { ArrowLeftIcon, HelpIcon } from '@shared/icons'
@@ -110,6 +111,7 @@ export function ChessGame() {
   const [showHistory, setShowHistory] = useState(false)
   const [showTutorial, setShowTutorial] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [confirmRequest, setConfirmRequest] = useState<ConfirmRequest | null>(null)
   const gameStartTimeRef = useRef<number>(0)
   const [hasCompletedTutorial, setHasCompletedTutorial] = useState(() => {
     try {
@@ -344,19 +346,24 @@ export function ChessGame() {
         return
       }
       if (difficulty === gameState.difficulty) return
+      const switchOpponent = () => {
+        setVictoryDialogDismissed(false)
+        gameEndHandledRef.current = false
+        gameStartTimeRef.current = Date.now()
+        startGame(gameState.mode, difficulty)
+      }
       // The opponent cannot change inside a game, so the record stays honest.
       // Switching mid-game ends it (no result is recorded) and starts a fresh one.
-      if (
-        gameState.status === 'playing' &&
-        gameState.moveHistory.length > 0 &&
-        !window.confirm('Change opponent? This ends the current game and starts a new one.')
-      ) {
+      if (gameState.status === 'playing' && gameState.moveHistory.length > 0) {
+        setConfirmRequest({
+          title: 'Change opponent?',
+          body: 'This ends the current game and starts a new one.',
+          action: 'New game',
+          onConfirm: switchOpponent,
+        })
         return
       }
-      setVictoryDialogDismissed(false)
-      gameEndHandledRef.current = false
-      gameStartTimeRef.current = Date.now()
-      startGame(gameState.mode, difficulty)
+      switchOpponent()
     },
     [isSetup, changeDifficulty, startGame, gameState.difficulty, gameState.mode, gameState.status, gameState.moveHistory.length]
   )
@@ -536,8 +543,23 @@ export function ChessGame() {
           onUndo={undoMove}
           onHint={requestHint}
           canHint={canHint}
-          onResign={resign}
-          onOfferDraw={offerDraw}
+          onResign={() =>
+            setConfirmRequest({
+              title: 'Resign this game?',
+              body: isPvP ? 'The other player wins.' : `${character.name} wins.`,
+              action: 'Resign',
+              destructive: true,
+              onConfirm: resign,
+            })
+          }
+          onOfferDraw={() =>
+            setConfirmRequest({
+              title: 'Agree a draw?',
+              body: 'Both players accept and the game ends level.',
+              action: 'Draw',
+              onConfirm: offerDraw,
+            })
+          }
           canUndo={canUndo}
           gameMode={gameState.mode}
           gameStatus={gameState.status}
@@ -566,6 +588,8 @@ export function ChessGame() {
           moveHistory={gameState.moveHistory}
         />
       )}
+
+      <ConfirmDialog request={confirmRequest} onClose={() => setConfirmRequest(null)} />
 
       <SettingsDialog
         open={showSettings}
