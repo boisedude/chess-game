@@ -120,14 +120,14 @@
 .chess-square-light { background: #ead7b0; }
 .chess-square-dark { background: #b0845c; }
 
-/* Last move: both squares take a sagebrush wash. */
-.cell-last-move.chess-square-light { background: #d3d59a; }
-.cell-last-move.chess-square-dark { background: #a3a85f; }
+/* Last move: both squares take a brass wash. */
+.cell-last-move.chess-square-light { background: #ecd27e; }
+.cell-last-move.chess-square-dark { background: #c9a145; }
 
 /* Selected square */
 .cell-selected.chess-square-light,
 .cell-selected.chess-square-dark {
-  background: #8fae6a;
+  background: #e3b53c;
 }
 
 /* King in check: a static red ring */

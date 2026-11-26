@@ -13,7 +13,7 @@ row), `src/components/Board.tsx` and `Cell.tsx` (slide on move, hint ring, last 
 ## The one memorable thing
 
 The board. It is the largest element on the page, centred, lit by one soft shadow, sitting
-on a dark slate table. Nothing else competes with it: no page gradient, no glow, no
+on green card-table felt under one lamp. Nothing else competes with it: no glow, no
 decorative frames, no emoji, no tagline.
 
 ## Tokens
@@ -23,14 +23,18 @@ them up without edits):
 
 | Role | Value | Use |
 |---|---|---|
-| background | `#14212b` | the table |
-| card / popover | `#1b2b36` | dialogs, chip, panels, the More menu |
-| border | `#2b3f4c` | hairlines |
-| foreground | `#e6ebe8` | text |
-| muted-foreground | `#9aacb3` | secondary text, labels |
-| primary (sagebrush) | `#b5ca9b` | the single primary button, the hint ring, the last move, game-over state |
-| destructive | `#f2877d` | resign, reset-stats confirmations only |
+| background (felt) | `#133026`, lit to `#1c4a39` under the lamp | the table |
+| card / popover | `#0f241c` | dialogs, panels, the More menu |
+| border | `#2e5244` | hairlines |
+| foreground (ivory) | `#f3ead8` | text |
+| muted-foreground | `#b5bfa6` | secondary text, labels |
+| primary (brass) | `#d8ac4b` | the single primary button, the hint ring, the last move, game-over state |
+| destructive | `#f17571` | resign, reset-stats confirmations only |
 | bella / coop / bentley | amber `#f59e0b`, blue `#3b82f6`, purple `#a855f7` | the ring around the opponent avatar, nothing else |
+
+The page background is `--arcade-felt`: one pool of lamp light over the middle of the table,
+falling off to the rails. It is the only gradient in the shell. Use the tokens
+(`hsl(var(--primary))` and friends), never the hex values, so the palette stays in one file.
 
 Dark only. No light mode in the games.
 
@@ -102,15 +106,17 @@ Each game keeps its own material. All of them follow the same physical rules:
   (lighter at the top left), a thin darker rim, and a short contact shadow under it. Flat
   single-colour circles are not finished. Draw pieces in CSS or inline SVG, never with
   font glyphs or emoji, so they look the same on every device.
-- **Colours that hold on the table.** Light pieces are warm ivory (`#f6f0e2`), dark pieces
-  slate black (`#2c3136`), reds are brick rather than fire-engine. The two sides must be
+- **Colours that hold on the table.** The table is green, so boards are wood, stone or
+  lacquer with a frame, never bare green against the felt (othello's green cloth sits inside
+  a wide wooden frame). Light pieces are warm ivory (`#f6f0e2`), dark pieces charcoal
+  (`#2c3136`), reds are oxblood rather than fire-engine. The two sides must be
   distinguishable without colour (shape, rim or value).
-- **The player always knows what just happened.** The last move is marked (a sagebrush
-  wash on its squares or a small sagebrush dot on the stone or disc). Legal targets for a
+- **The player always knows what just happened.** The last move is marked (a brass
+  wash on its squares or a small brass dot on the stone or disc). Legal targets for a
   selected piece are marked with a dark translucent dot, captures with a ring. The winning
   line or the pieces that decided the game are marked when the game ends.
 - **Hint.** The Hint button marks the engine's suggestion with a static ring: use
-  `.arcade-hint` (sagebrush between two slate keylines, legible on any board colour) on
+  `.arcade-hint` (brass between two dark keylines, legible on any board colour) on
   the squares, pit, column or point involved. It clears when the position changes.
 
 ## Motion
@@ -147,7 +153,7 @@ Motion answers a move and nothing else.
 ## Do not
 
 - Do not add dependencies. Icons come from `@shared/icons`; the menu is `@shared/MoreMenu`.
-- Do not keep a per-game page gradient or per-game accent colour.
+- Do not keep a per-game page background or per-game accent colour.
 - Do not use the character colours for buttons or text; they are the avatar ring only.
 - Do not render "Your Opponent:" or "Mode:" as labelled form rows on the page.
 

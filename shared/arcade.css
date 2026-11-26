@@ -6,9 +6,10 @@
  * HSL-triplet convention the games already map in their @theme blocks, so
  * every shadcn button, dialog, select and card picks the palette up as is.
  *
- * The table is dark slate, the same slate as mcooper.com. Boards sit on it
- * as physical objects in their own materials (wood, felt, stone); the chrome
- * around them stays quiet. Encode Sans is the only typeface.
+ * The table is green card-table felt under one lamp. Boards sit on it as
+ * physical objects in their own materials (wood, stone, lacquer); the chrome
+ * around them stays quiet, with brass as the only accent. Encode Sans is the
+ * only typeface.
  */
 
 /*
@@ -26,27 +27,31 @@
 
 @layer base {
 :root {
-  /* Snake River slate table, fog text, sagebrush accent */
-  --background: 206 37% 12%;
-  --foreground: 144 11% 91%;
-  --card: 204 33% 16%;
-  --card-foreground: 144 11% 91%;
-  --popover: 204 33% 16%;
-  --popover-foreground: 144 11% 91%;
-  --primary: 87 31% 70%;
-  --primary-foreground: 206 37% 12%;
-  --secondary: 203 32% 19%;
-  --secondary-foreground: 144 11% 91%;
-  --muted: 205 32% 18%;
-  --muted-foreground: 197 14% 65%;
-  --accent: 203 31% 20%;
-  --accent-foreground: 144 11% 91%;
-  --destructive: 5 82% 72%;
-  --destructive-foreground: 206 37% 12%;
-  --border: 204 28% 23%;
-  --input: 204 28% 23%;
-  --ring: 87 31% 70%;
+  /* Card-table felt, ivory text, brass accent */
+  --background: 158 44% 13%;
+  --foreground: 42 52% 90%;
+  --card: 158 40% 10%;
+  --card-foreground: 42 52% 90%;
+  --popover: 158 40% 10%;
+  --popover-foreground: 42 52% 90%;
+  --primary: 41 64% 57%;
+  --primary-foreground: 158 45% 9%;
+  --secondary: 157 36% 19%;
+  --secondary-foreground: 42 52% 90%;
+  --muted: 158 38% 17%;
+  --muted-foreground: 80 16% 70%;
+  --accent: 157 34% 21%;
+  --accent-foreground: 42 52% 90%;
+  --destructive: 2 82% 70%;
+  --destructive-foreground: 158 45% 9%;
+  --border: 156 28% 25%;
+  --input: 156 26% 30%;
+  --ring: 41 64% 57%;
   --radius: 0.375rem;
+
+  /* The felt: one pool of lamp light over the middle of the table, darker at the rails. */
+  --arcade-felt:
+    radial-gradient(120% 85% at 50% 22%, hsl(156 46% 20%) 0%, hsl(158 46% 13%) 55%, hsl(160 50% 8%) 100%);
 
   /* Opponent ring colours. Only the opponent chip and the avatar ring use them. */
   --arcade-bella: #f59e0b;
@@ -62,18 +67,19 @@
   --arcade-col: clamp(17.5rem, min(calc(100dvw - 2rem), calc(100dvh - 14.5rem)), 47.5rem);
 
   /* Board shadow: one soft drop so the board reads as an object on the table */
-  --arcade-board-shadow: 0 24px 48px -24px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --arcade-board-shadow: 0 28px 50px -22px rgba(0, 0, 0, 0.75), 0 3px 8px rgba(0, 0, 0, 0.4);
 
   color-scheme: dark;
 }
 
 html {
-  background: hsl(var(--background));
+  background: hsl(160 50% 8%);
 }
 
 body {
   margin: 0;
-  background: hsl(var(--background));
+  min-height: 100dvh;
+  background: var(--arcade-felt) fixed;
   color: hsl(var(--foreground));
   font-family: "Encode Sans", ui-sans-serif, system-ui, sans-serif;
   font-variation-settings: "wdth" 106;
@@ -105,6 +111,7 @@ body {
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid hsl(var(--border));
+  background: hsl(160 48% 9% / 0.55);
 }
 
 .arcade-stage {
@@ -261,12 +268,12 @@ body {
   to { clip-path: inset(0 0 0 0); }
 }
 
-/* Hint: a static ring. Boards whose own colours swallow sagebrush add a keyline. */
+/* Hint: a static brass ring between two dark keylines, so it reads on any board colour. */
 .arcade-hint {
   box-shadow:
-    inset 0 0 0 2px hsl(var(--background)),
+    inset 0 0 0 2px hsl(160 50% 8%),
     inset 0 0 0 6px hsl(var(--primary)),
-    inset 0 0 0 8px hsl(var(--background));
+    inset 0 0 0 8px hsl(160 50% 8%);
 }
 
 /* More menu: the lesser-used actions, so the control row stays one line. */
@@ -283,7 +290,7 @@ body {
   padding: 0 1rem 0 1.25rem;
   border: 1px solid hsl(var(--input));
   border-radius: calc(var(--radius) - 2px);
-  background: hsl(var(--background));
+  background: transparent;
   color: hsl(var(--foreground));
   font: inherit;
   font-size: 0.875rem;

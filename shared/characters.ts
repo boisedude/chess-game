@@ -129,9 +129,9 @@ export const characters: Record<CharacterId, Character> = {
     name: 'Bentley',
     nickname: 'The Mastermind',
     difficulty: 'hard',
-    description: 'Calculating, intense, the unbeatable champion',
+    description: 'Calculating, intense, the self-declared champion',
     personality: 'Ruthless strategist who plays to win',
-    playingStyle: 'Perfect strategy, thinks 10 moves ahead, shows no mercy',
+    playingStyle: 'Searches far ahead, punishes mistakes, shows no mercy',
     backstory: 'The legendary arcade champion. Nobody beats Bentley... or do they? He\'s been the final boss of Coop\'s Arcade since day one. Can you dethrone him?',
 
     avatar: './characters/determined_bentley.png',
