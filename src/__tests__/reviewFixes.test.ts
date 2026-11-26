@@ -109,3 +109,59 @@ describe('hard AI', () => {
     expect(m.to).toEqual({ row: 0, col: 0 })
   })
 })
+
+describe('castling by hand', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    localStorage.clear()
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  // 1.Nf3 Nf6 2.g3 g6 3.Bg2 Bg7 in two-player mode, then White castles short.
+  const OPENING: [[number, number], [number, number]][] = [
+    [[7, 6], [5, 5]], [[0, 6], [2, 5]],
+    [[6, 6], [5, 6]], [[1, 6], [2, 6]],
+    [[7, 5], [6, 6]], [[0, 5], [1, 6]],
+  ]
+
+  function setUp() {
+    const { result } = renderHook(() => useChessGame('hard'))
+    act(() => result.current.startGame('pvp', 'hard'))
+    for (const [from, to] of OPENING) {
+      act(() => result.current.handleSquareClick(from[0], from[1]))
+      act(() => result.current.handleSquareClick(to[0], to[1]))
+    }
+    return result
+  }
+
+  it.each([
+    ['its destination square', [7, 6]],
+    ['its own rook', [7, 7]],
+  ] as const)('castles when the king is moved onto %s', (_name, target) => {
+    const result = setUp()
+    act(() => result.current.handleSquareClick(7, 4))
+    act(() => result.current.handleSquareClick(target[0], target[1]))
+    const board = result.current.gameState.board
+    expect(board[7][6]).toEqual({ player: 1, type: 'king' })
+    expect(board[7][5]).toEqual({ player: 1, type: 'rook' })
+    expect(board[7][4]).toBeNull()
+    expect(board[7][7]).toBeNull()
+    expect(result.current.gameState.lastMove?.isCastling).toBe(true)
+  })
+
+  it('still selects the rook when castling that side is not legal', () => {
+    const { result } = renderHook(() => useChessGame('hard'))
+    act(() => result.current.startGame('pvp', 'hard'))
+    // 1.h4 a6: the h-rook has a move, but castling is blocked by the knight and bishop.
+    act(() => result.current.handleSquareClick(6, 7))
+    act(() => result.current.handleSquareClick(4, 7))
+    act(() => result.current.handleSquareClick(1, 0))
+    act(() => result.current.handleSquareClick(2, 0))
+    act(() => result.current.handleSquareClick(7, 4))
+    act(() => result.current.handleSquareClick(7, 7))
+    expect(result.current.isPieceSelected(7, 7)).toBe(true)
+    expect(result.current.gameState.board[7][4]).toEqual({ player: 1, type: 'king' })
+  })
+})

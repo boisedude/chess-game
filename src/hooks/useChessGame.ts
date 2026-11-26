@@ -259,6 +259,31 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
 
       const piece = gameState.board[row][col]
 
+      // King onto its own rook is the other common way to castle: treat it as the castling move.
+      if (selectedPiece && piece && piece.player === gameState.currentPlayer && piece.type === 'rook') {
+        const selected = gameState.board[selectedPiece.row][selectedPiece.col]
+        if (selected?.type === 'king' && selectedPiece.row === row) {
+          const side = col > selectedPiece.col ? 'kingside' : 'queenside'
+          const castle = getValidMovesForPiece(
+            gameState.board, selectedPiece, gameState.castlingRights, gameState.enPassantSquare
+          ).find(m => m.isCastling && m.castlingSide === side)
+          if (castle) {
+            setSelectedPiece(null)
+            setHighlightedSquares([])
+            setGameState(prevState => {
+              try {
+                const nextState = computeNextGameState(prevState, castle)
+                return { ...nextState, undoState: nextState.status !== 'playing' ? null : snapshotForUndo(prevState) }
+              } catch (e) {
+                console.warn('chess: failed to apply castling move', e)
+                return prevState
+              }
+            })
+            return
+          }
+        }
+      }
+
       // If clicking on current player's piece, select it
       if (piece && piece.player === gameState.currentPlayer) {
         const validMoves = getValidMovesForPiece(

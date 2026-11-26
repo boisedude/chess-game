@@ -190,7 +190,7 @@ const tutorialSteps: TutorialStep[] = [
           <div className="text-2xl shrink-0">♔♖</div>
           <div>
             <div className="font-semibold">Castling</div>
-            <div className="text-xs text-muted-foreground">King moves 2 squares toward a rook; the rook jumps over. Only if neither has moved and no squares are under attack.</div>
+            <div className="text-xs text-muted-foreground">Select your king, then pick the square two files toward the rook, or the rook itself; the rook jumps over. Allowed only if neither piece has moved, the squares between them are empty, and the king is not in check and does not cross or land on an attacked square.</div>
           </div>
         </div>
         <div className="flex items-start gap-3 rounded-md border border-border p-3">
