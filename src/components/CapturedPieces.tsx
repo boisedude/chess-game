@@ -6,7 +6,8 @@
  */
 
 import React from 'react'
-import type { Move, PieceType } from '@/types/chess.types'
+import type { Move, PieceType, Player } from '@/types/chess.types'
+import { PieceArt } from './PieceArt'
 
 interface CapturedPiecesProps {
   moveHistory: Move[]
@@ -23,24 +24,6 @@ const MATERIAL_VALUES: Record<PieceType, number> = {
   rook: 5,
   queen: 9,
   king: 0,
-}
-
-const WHITE_SYMBOLS: Record<PieceType, string> = {
-  king: '\u2654',
-  queen: '\u2655',
-  rook: '\u2656',
-  bishop: '\u2657',
-  knight: '\u2658',
-  pawn: '\u2659',
-}
-
-const BLACK_SYMBOLS: Record<PieceType, string> = {
-  king: '\u265A',
-  queen: '\u265B',
-  rook: '\u265C',
-  bishop: '\u265D',
-  knight: '\u265E',
-  pawn: '\u265F',
 }
 
 function sortByValue(pieces: PieceType[]): PieceType[] {
@@ -74,13 +57,13 @@ function CapturedPiecesComponent({ moveHistory, isPvP, characterName }: Captured
   const sortedByWhite = sortByValue(capturedByWhite)
   const sortedByBlack = sortByValue(capturedByBlack)
 
-  const strip = (pieces: PieceType[], symbols: Record<PieceType, string>, lead: number) => (
-    <div className="flex min-h-6 flex-wrap items-center gap-x-px text-lg leading-none">
+  const strip = (pieces: PieceType[], player: Player, lead: number) => (
+    <div className="flex min-h-6 items-center">
       {pieces.map((piece, i) => (
-        <span key={i}>{symbols[piece]}{piece === 'pawn' ? '\uFE0E' : ''}</span>
+        <PieceArt key={i} type={piece} player={player} className="-mr-1.5 h-6 w-6" />
       ))}
       {lead > 0 && pieces.length > 0 && (
-        <span className="ml-1.5 text-xs font-semibold">+{lead}</span>
+        <span className="ml-3 text-xs font-semibold">+{lead}</span>
       )}
     </div>
   )
@@ -90,9 +73,9 @@ function CapturedPiecesComponent({ moveHistory, isPvP, characterName }: Captured
       className="arcade-score -mt-2 text-muted-foreground/80"
       aria-label={isPvP ? 'Captured pieces' : `Pieces captured by you and ${characterName}`}
     >
-      {strip(sortedByWhite, BLACK_SYMBOLS, advantage)}
+      {strip(sortedByWhite, 2, advantage)}
       <div />
-      <div className="flex justify-end">{strip(sortedByBlack, WHITE_SYMBOLS, -advantage)}</div>
+      <div className="flex justify-end">{strip(sortedByBlack, 1, -advantage)}</div>
     </div>
   )
 }

@@ -13,7 +13,7 @@ import {
   DialogDescription,
 } from './ui/dialog'
 import type { Player, PromotionPiece } from '@/types/chess.types'
-import { PIECE_SYMBOLS } from '@/types/chess.types'
+import { PieceArt } from './PieceArt'
 
 interface PromotionDialogProps {
   open: boolean
@@ -54,9 +54,7 @@ export const PromotionDialog = React.memo(function PromotionDialog({
               className="flex min-h-11 flex-col items-center gap-0.5 rounded-md border border-border p-2 transition-colors hover:border-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label={`Promote to ${label} (${points} points)`}
             >
-              <span className="text-4xl leading-none" style={{ fontFamily: '"Segoe UI Symbol", "Noto Sans Symbols 2", sans-serif' }}>
-                {PIECE_SYMBOLS[player][type]}
-              </span>
+              <PieceArt type={type} player={player} className="h-12 w-12" />
               <span className="text-xs text-muted-foreground">{label}</span>
             </button>
           ))}

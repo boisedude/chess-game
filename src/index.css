@@ -28,57 +28,6 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 
-  /* Piece animations: only the ones that answer a move */
-  --animate-piece-slide: piece-slide 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --animate-piece-capture: piece-capture 0.4s ease-out forwards;
-  --animate-piece-promotion: piece-promotion 0.8s ease-out;
-
-  @keyframes piece-slide {
-    0% {
-      transform: translate(var(--slide-from-x, 0), var(--slide-from-y, 0));
-    }
-    100% {
-      transform: translate(0, 0);
-    }
-  }
-
-  @keyframes piece-capture {
-    0% {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-    30% {
-      opacity: 0.8;
-      transform: scale(1.2) translateY(-5px);
-    }
-    100% {
-      opacity: 0;
-      transform: scale(0.3) translateY(50px) rotate(180deg);
-    }
-  }
-
-  @keyframes piece-promotion {
-    0% {
-      transform: scale(1);
-      filter: brightness(1);
-    }
-    25% {
-      transform: scale(1.3);
-      filter: brightness(1.5);
-    }
-    50% {
-      transform: scale(1.2);
-      filter: brightness(1.3);
-    }
-    75% {
-      transform: scale(1.15);
-      filter: brightness(1.2);
-    }
-    100% {
-      transform: scale(1);
-      filter: brightness(1);
-    }
-  }
 }
 
 @layer base {
@@ -87,95 +36,148 @@
   }
 }
 
-@layer utilities {
-  .animate-piece-slide {
-    animation: piece-slide 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+/* A moved piece slides in from the square it left. Offsets are in squares. */
+@keyframes piece-slide {
+  from {
+    transform: translate(var(--slide-from-x, 0), var(--slide-from-y, 0));
   }
-
-  .animate-piece-capture {
-    animation: piece-capture 0.4s ease-out forwards;
-  }
-
-  .animate-piece-promotion {
-    animation: piece-promotion 0.8s ease-out;
+  to {
+    transform: translate(0, 0);
   }
 }
 
-/* Board: matte cream and green squares in a dark wood frame */
-.chess-square-light {
-  background: #ecd9b5;
-  position: relative;
+.animate-piece-slide {
+  animation: piece-slide 0.22s cubic-bezier(0.2, 0.7, 0.3, 1);
+  z-index: 5;
 }
 
-.chess-square-dark {
-  background: #769656;
-  position: relative;
+/* Chess needs room for the captured pieces and the move list above and below the board. */
+.arcade-stage {
+  --arcade-col: clamp(17.5rem, min(calc(100dvw - 2rem), calc(100dvh - 19.5rem)), 47.5rem);
 }
 
+/* Board: maple and walnut squares in a dark walnut frame, all matte. */
 .board-frame {
-  background: #4a2e18;
-  padding: 10px;
+  background: linear-gradient(145deg, #5a3a22, #432a17);
+  padding: 0.5rem;
   border-radius: 0.5rem;
   position: relative;
+  box-shadow: var(--arcade-board-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-@media (min-width: 640px) {
-  .board-frame {
-    padding: 14px;
-  }
+.board-layout {
+  display: grid;
+  grid-template-columns: 1.1rem 1fr;
+  grid-template-rows: 1fr 1.1rem;
+  gap: 0.25rem;
 }
 
-.board-inner {
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  aspect-ratio: 1;
   border-radius: 2px;
   overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  /* Dragging a piece must not scroll the page. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-/* Pieces */
-.chess-piece-white {
-  color: #ffffff;
-  -webkit-text-stroke: 1.2px #333333;
-  paint-order: stroke fill;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+.board-ranks,
+.board-files {
+  display: grid;
+  color: #d9c3a0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+  align-items: center;
 }
 
-.chess-piece-black {
-  color: #1a1a1a;
-  -webkit-text-stroke: 0.5px #000000;
-  paint-order: stroke fill;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+.board-ranks { grid-template-rows: repeat(8, 1fr); }
+.board-files { grid-column: 2; grid-template-columns: repeat(8, 1fr); }
+
+@media (min-width: 640px) {
+  .board-frame { padding: 0.75rem; }
+  .board-layout { grid-template-columns: 1.4rem 1fr; grid-template-rows: 1fr 1.4rem; }
+  .board-ranks, .board-files { font-size: 0.8rem; }
 }
 
-/* Valid move: a static sagebrush dot */
-.valid-move-indicator {
-  position: absolute;
-  width: 28%;
-  height: 28%;
-  border-radius: 50%;
-  background: hsl(var(--primary));
-  opacity: 0.85;
+.chess-cell {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Capture target: a static sagebrush ring */
-.cell-highlighted {
-  background-image: linear-gradient(rgba(181, 202, 155, 0.22), rgba(181, 202, 155, 0.22));
+.chess-cell:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 3px hsl(var(--ring));
 }
 
-/* Selected square: a static tint and ring */
-.cell-selected {
-  background-image: linear-gradient(rgba(181, 202, 155, 0.4), rgba(181, 202, 155, 0.4));
-  box-shadow: inset 0 0 0 3px hsl(var(--primary));
+.chess-square-light { background: #ead7b0; }
+.chess-square-dark { background: #b0845c; }
+
+/* Last move: both squares take a sagebrush wash. */
+.cell-last-move.chess-square-light { background: #d3d59a; }
+.cell-last-move.chess-square-dark { background: #a3a85f; }
+
+/* Selected square */
+.cell-selected.chess-square-light,
+.cell-selected.chess-square-dark {
+  background: #8fae6a;
 }
 
 /* King in check: a static red ring */
 .king-in-check {
   box-shadow: inset 0 0 0 3px hsl(var(--destructive));
-  background-image: radial-gradient(circle, rgba(242, 135, 125, 0.45), transparent 70%);
+  background-image: radial-gradient(circle, rgba(242, 135, 125, 0.55), transparent 70%);
+}
+
+/* Where the selected piece can go: a dot on an empty square, a ring around a capture. */
+.valid-move-indicator {
+  position: absolute;
+  width: 30%;
+  height: 30%;
+  border-radius: 50%;
+  background: rgba(20, 33, 43, 0.3);
+}
+
+.capture-indicator {
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  border: 0.3rem solid rgba(20, 33, 43, 0.3);
+}
+
+/* Pieces */
+.chess-piece-slot {
+  position: relative;
+  z-index: 1;
+  width: 92%;
+  height: 92%;
+}
+
+.chess-piece {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  filter: drop-shadow(0 2px 1.5px rgba(0, 0, 0, 0.35));
+}
+
+/* The piece in the hand while dragging */
+.chess-drag-piece {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  transform: scale(1.12);
+  filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.4));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-piece-slide,
-  .animate-piece-capture,
-  .animate-piece-promotion {
+  .animate-piece-slide {
     animation: none !important;
   }
 }

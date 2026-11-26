@@ -3,7 +3,7 @@
  *
  * Core domain types for the chess game engine.
  * Exports: Player, PieceType, Piece, Board, GameState, Move, ValidMove, UndoState,
- * LeaderboardEntry, CastlingRights, BOARD_SIZE, PIECE_SYMBOLS, PIECE_VALUES.
+ * LeaderboardEntry, CastlingRights, BOARD_SIZE, PIECE_VALUES.
  *
  * Player 1 = White (human), Player 2 = Black (AI or second human).
  * Board is 8x8, Row 0 = Black back rank (rank 8), Row 7 = White back rank (rank 1).
@@ -148,30 +148,6 @@ export interface LeaderboardEntry {
   perfectGames: number
   totalGames: number
   totalCaptures: number
-}
-
-/** Unicode symbols for each piece type by player.
- * Both players use the filled set (U+265A-265F) for consistent cross-platform rendering.
- * U+FE0E forces text presentation to prevent emoji rendering on Windows.
- * Visual distinction is handled by CSS classes (chess-piece-white / chess-piece-black).
- */
-export const PIECE_SYMBOLS: Record<Player, Record<PieceType, string>> = {
-  1: {
-    king: '\u265A\uFE0E',
-    queen: '\u265B\uFE0E',
-    rook: '\u265C\uFE0E',
-    bishop: '\u265D\uFE0E',
-    knight: '\u265E\uFE0E',
-    pawn: '\u265F\uFE0E',
-  },
-  2: {
-    king: '\u265A\uFE0E',
-    queen: '\u265B\uFE0E',
-    rook: '\u265C\uFE0E',
-    bishop: '\u265D\uFE0E',
-    knight: '\u265E\uFE0E',
-    pawn: '\u265F\uFE0E',
-  },
 }
 
 /** Material values in centipawns */

@@ -7,7 +7,7 @@
 ```bash
 npm run dev          # Dev server on port 3003
 npm run build        # TypeScript check + production build
-npm run test         # Jest unit tests (6 test files, 231 tests)
+npm run test         # Jest unit tests
 npm run test:watch   # Jest watch mode
 npm run test:e2e     # Playwright E2E tests (chromium, port 3003)
 npm run lint         # ESLint
@@ -23,7 +23,7 @@ Static SPA chess game: React 19 + TypeScript 5.9 + Vite 7 + Tailwind CSS + shadc
 ```
 User Click → useChessGame (hook) → chessRules (engine) → Board re-render
                   ↓
-           AI turn? → aiStrategies (minimax) → animated move → state update
+           AI turn? → aiClient (worker) → aiStrategies → engine (search) → animated move → state update
 ```
 
 ### Key Files
@@ -31,7 +31,8 @@ User Click → useChessGame (hook) → chessRules (engine) → Board re-render
 | File | Purpose | Lines |
 |------|---------|-------|
 | `src/lib/chessRules.ts` | Pure game rules engine. All chess logic lives here. | ~840 |
-| `src/lib/aiStrategies.ts` | Minimax AI with alpha-beta pruning, quiescence search, transposition table, opening book, 3 difficulty levels. | ~766 |
+| `src/lib/aiStrategies.ts` | The three opponents: book, randomness and time budget per difficulty. Calls the engine. | ~80 |
+| `src/lib/engine.ts` | The chess engine: 0x88 board, make/unmake, iterative deepening PVS, transposition table, quiescence, tapered evaluation. `perft` and `engineLegalMoves` exist for the tests that check it against `chessRules.ts`. | ~950 |
 | `src/lib/openingBook.ts` | Opening book tree (~15 lines, weighted moves) with lookup logic. | ~708 |
 | `src/lib/moveNotation.ts` | Algebraic notation converter for move history display. | ~70 |
 | `src/hooks/useChessGame.ts` | React state management, animation sequencing, AI triggering. | ~554 |
@@ -68,13 +69,13 @@ getNewEnPassant(board, move)              // En passant square after a move
 ### AI Engine API (`aiStrategies.ts`)
 
 ```typescript
-getAIMove(state, player, difficulty) → ValidMove | null
+getAIMove(state, player, difficulty, options?) → ValidMove | null
 ```
 
 Three difficulty levels:
-- **Easy (Bella)**: depth 1, 30% random moves, material-only evaluation, no opening book
-- **Medium (Coop)**: depth 2, 5% random, material + basic position + mobility, opening book (faithful for moves 1-3, 70% for moves 4+)
-- **Hard (Bentley)**: depth 3, alpha-beta + move ordering + quiescence search + transposition table, full positional evaluation (material, position, mobility, bishop pair, castling, king safety, pawn structure, rook on open files), always follows opening book
+- **Easy (Bella)**: 30% random moves; otherwise a one-move engine search that picks loosely among moves within 1.5 pawns of the best. No opening book.
+- **Medium (Coop)**: opening book (faithful for moves 1-3, 70% after), then a fixed depth-3 engine search choosing among moves within a quarter pawn of the best.
+- **Hard (Bentley)**: opening book, then the engine with a 700 ms budget (150 ms if the worker is unavailable and the search has to run on the main thread). The Hint button asks the same engine for 400 ms.
 
 ### Special Chess Rules Implemented
 
@@ -139,7 +140,7 @@ App (ErrorBoundary)
 
 ## Testing Strategy
 
-### Unit Tests (6 files, 231 tests)
+### Unit Tests
 - `chessRules.test.ts` - Comprehensive rules testing (84 tests)
 - `chessRulesExtended.test.ts` - Edge cases, bug fix verification, achievement tracking (33 tests)
 - `aiStrategies.test.ts` - AI behavior, difficulty levels, special moves, opening book (26 tests)
@@ -186,9 +187,9 @@ All prefixed with `chess-` to avoid collisions. Defined in `src/lib/storageKeys.
 
 ## Known Limitations
 
-1. **AI depth**: Hard difficulty uses depth 3 minimax with quiescence search (capture-only continuation up to 8 plies). Transposition table caches positions within each move calculation.
+1. **AI strength**: Bentley's depth depends on the device, since he searches by the clock. The quiescence search looks at captures and queen promotions only, so it can misjudge positions where the side to move is in check at the horizon.
 2. **Single-level undo**: Only one undo step. In PvC mode, undo removes 2 moves (player + AI).
-3. **Randomness in move selection**: Easy (30%) and medium (5%) have a chance to play a completely random move instead of using minimax. This is intentional for weaker play.
+3. **Randomness in move selection**: Easy has a 30% chance to play a completely random move instead of searching. This is intentional for weaker play.
 4. **Opening book**: Covers ~15 lines with weighted move selection (Italian, Ruy Lopez, Scotch, Vienna, Petroff, Sicilian Najdorf/Classical/Kan, French Classical/Winawer/Tarrasch/Advance, Caro-Kann, Scandinavian, QGD, QGA, Slav, King's Indian, Nimzo-Indian, Queen's Indian) to depth ~6 moves. No endgame tablebase.
 5. **Mobility eval is expensive**: `getAllValidMoves` called twice per leaf node for medium/hard. Performance is acceptable at current depths.
 

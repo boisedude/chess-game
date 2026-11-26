@@ -1,12 +1,9 @@
 /**
- * Animation Constants (milliseconds)
- *
- * Timing values for piece movement, capture, and promotion animations.
- * Durations must match their CSS animation counterparts in index.css.
+ * Timing constants (milliseconds).
+ * MOVE_SLIDE_DURATION must match the piece-slide animation in index.css.
  */
 
-export const AI_MOVE_DELAY = 600 // Pause before AI starts moving
-export const MOVE_ANIMATION_DURATION = 350 // Piece sliding to new square
-export const CAPTURE_ANIMATION_DURATION = 400 // Captured piece fade-out
-export const PROMOTION_ANIMATION_DURATION = 800 // Pawn promotion effect
-export const POST_ANIMATION_SETTLE_DELAY = 300 // Pause after animation before showing dialogs
+export const AI_MOVE_DELAY = 100 // Pause before the opponent starts thinking
+export const AI_MIN_THINK_TIME = 600 // A reply never lands sooner than this, even from the opening book
+export const MOVE_SLIDE_DURATION = 220 // A piece sliding to its new square
+export const POST_ANIMATION_SETTLE_DELAY = 260 // Input stays locked this long after the opponent's move lands

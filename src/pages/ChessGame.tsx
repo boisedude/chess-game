@@ -46,9 +46,13 @@ import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { findKing } from '@/lib/chessRules'
 import { STORAGE_KEYS } from '@/lib/storageKeys'
 import { PROMOTION_SOUND_DELAY_MS } from '@/lib/gameConstants'
-import type { Difficulty } from '@/types/chess.types'
+import type { Difficulty, Position } from '@/types/chess.types'
 
 /** Read ?character= URL parameter and map to difficulty level */
+function squareName(pos: Position): string {
+  return `${String.fromCharCode(97 + pos.col)}${8 - pos.row}`
+}
+
 function getInitialDifficultyFromUrl(): Difficulty {
   try {
     const params = new URLSearchParams(window.location.search)
@@ -68,10 +72,10 @@ export function ChessGame() {
 
   const {
     gameState,
+    hint,
+    canHint,
+    requestHint,
     isAnimating,
-    animatingPiece,
-    capturedPiece,
-    promotedPiece,
     handleSquareClick,
     handlePromotionChoice,
     startNewGame,
@@ -364,7 +368,7 @@ export function ChessGame() {
     [changeMode]
   )
 
-  // Keyboard shortcut for undo (U key)
+  // Keyboard shortcuts: U to undo, H for a hint
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
@@ -378,11 +382,15 @@ export function ChessGame() {
         event.preventDefault()
         undoMove()
       }
+      if ((event.key === 'h' || event.key === 'H') && canHint) {
+        event.preventDefault()
+        requestHint()
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [canUndo, undoMove])
+  }, [canUndo, undoMove, canHint, requestHint])
 
   const opponent = character.name
   const lastMove = gameState.moveHistory[gameState.moveHistory.length - 1]
@@ -484,9 +492,12 @@ export function ChessGame() {
           <div className="arcade-turn" data-active={turnActive}>
             {turnText}
           </div>
-          <div>
-            <strong>{gameState.blackCount}</strong>
-            {themLabel}
+          <div className="arcade-player">
+            {!isPvP && <img className="arcade-avatar" data-character={character.id} src={character.avatar} alt="" />}
+            <div>
+              <strong>{gameState.blackCount}</strong>
+              {themLabel}
+            </div>
           </div>
         </div>
 
@@ -503,12 +514,14 @@ export function ChessGame() {
           isPieceSelected={isPieceSelected}
           disabled={isAnimating || gameState.status !== 'playing' || !!gameState.pendingPromotion}
           lastMove={gameState.lastMove}
-          animatingPiece={animatingPiece}
-          capturedPiece={capturedPiece}
-          promotedPiece={promotedPiece}
+          moveCount={gameState.moveHistory.length}
           isInCheck={gameState.isInCheck}
           checkSquare={checkSquare}
+          hint={hint}
         />
+        <div className="sr-only" role="status" aria-live="polite">
+          {hint ? `Hint: ${squareName(hint.from)} to ${squareName(hint.to)}` : ''}
+        </div>
 
         {settings.showMoveNotation && <MoveNotation moveHistory={gameState.moveHistory} />}
 
@@ -521,6 +534,8 @@ export function ChessGame() {
           onShowSettings={() => setShowSettings(true)}
           onReturnToSetup={handleReturnToSetup}
           onUndo={undoMove}
+          onHint={requestHint}
+          canHint={canHint}
           onResign={resign}
           onOfferDraw={offerDraw}
           canUndo={canUndo}

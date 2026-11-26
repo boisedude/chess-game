@@ -14,7 +14,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import type { GameState, Difficulty, Position, ValidMove, UndoState, GameMode, PromotionPiece } from '@/types/chess.types'
+import type { GameState, Difficulty, Position, UndoState, GameMode, PromotionPiece } from '@/types/chess.types'
 import {
   createInitialGameState,
   getValidMovesForPiece,
@@ -25,16 +25,12 @@ import { saveGame, loadSavedGame, clearSavedGame, hasSavedGame } from '@/lib/gam
 import { requestAIMove } from '@/lib/aiClient'
 import {
   AI_MOVE_DELAY,
-  MOVE_ANIMATION_DURATION,
-  CAPTURE_ANIMATION_DURATION,
-  PROMOTION_ANIMATION_DURATION,
+  AI_MIN_THINK_TIME,
   POST_ANIMATION_SETTLE_DELAY,
 } from '@/lib/animationConstants'
 
-interface AnimatingPiece {
-  from: Position
-  to: Position
-}
+/** Thinking time for a hint: shorter than Bentley's own move, still several moves deep. */
+const HINT_TIME_MS = 400
 
 /** Promise-based delay that rejects on AbortSignal abort. */
 function cancellableDelay(ms: number, signal: AbortSignal): Promise<void> {
@@ -102,10 +98,9 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
   const [isAnimating, setIsAnimating] = useState(false)
   const [highlightedSquares, setHighlightedSquares] = useState<Position[]>([])
 
-  // Animation state
-  const [animatingPiece, setAnimatingPiece] = useState<AnimatingPiece | null>(null)
-  const [capturedPiece, setCapturedPiece] = useState<Position | null>(null)
-  const [promotedPiece, setPromotedPiece] = useState<Position | null>(null)
+  // A hint belongs to the exact state it was asked for; any move, undo or new game replaces
+  // that state object, which retires the hint without each handler having to clear it.
+  const [hint, setHint] = useState<{ state: GameState; from: Position; to: Position } | null>(null)
 
   const aiMoveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const aiMoveScheduledRef = useRef(false)
@@ -122,9 +117,6 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
     }
     aiMoveScheduledRef.current = false
     setIsAnimating(false)
-    setAnimatingPiece(null)
-    setCapturedPiece(null)
-    setPromotedPiece(null)
   }, [])
 
   // Cleanup on unmount
@@ -144,49 +136,6 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
     }
   }, [gameState])
 
-  /**
-   * Execute a move with animation sequence
-   */
-  const executeAnimatedMove = useCallback(
-    async (
-      move: ValidMove,
-      signal: AbortSignal
-    ): Promise<void> => {
-      // Animate piece movement
-      setAnimatingPiece({
-        from: move.from,
-        to: move.to,
-      })
-
-      if (move.isCapture) {
-        // For en passant, captured piece is on a different square
-        if (move.isEnPassant) {
-          setCapturedPiece({ row: move.from.row, col: move.to.col })
-        } else {
-          setCapturedPiece(move.to)
-        }
-      }
-
-      // Wait for move animation
-      await cancellableDelay(MOVE_ANIMATION_DURATION, signal)
-
-      if (move.isCapture) {
-        await cancellableDelay(CAPTURE_ANIMATION_DURATION / 2, signal)
-        setCapturedPiece(null)
-      }
-
-      setAnimatingPiece(null)
-
-      // Promotion animation
-      if (move.isPromotion) {
-        setPromotedPiece(move.to)
-        await cancellableDelay(PROMOTION_ANIMATION_DURATION, signal)
-        setPromotedPiece(null)
-      }
-    },
-    []
-  )
-
   // Handle AI move when it's AI's turn (Player 2 = Black)
   useEffect(() => {
     if (
@@ -204,16 +153,18 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
       aiMoveTimeoutRef.current = setTimeout(async () => {
         aiMoveTimeoutRef.current = null
         try {
+          const askedAt = Date.now()
           const aiMove = await requestAIMove(gameState, 2, gameState.difficulty)
+          // The search time is the thinking pause; only pad replies that came back instantly.
+          const padding = AI_MIN_THINK_TIME - (Date.now() - askedAt)
+          if (padding > 0) await cancellableDelay(padding, abortController.signal)
           // New game, undo, opponent switch or unmount happened while thinking.
           if (abortController.signal.aborted) return
 
           if (aiMove) {
+            // The board slides the piece itself when the position changes; input stays
+            // locked until that slide has finished.
             setIsAnimating(true)
-
-            await executeAnimatedMove(aiMove, abortController.signal)
-            await cancellableDelay(POST_ANIMATION_SETTLE_DELAY, abortController.signal)
-
             setGameState(prevState => {
               try {
                 const nextState = computeNextGameState(prevState, aiMove)
@@ -227,6 +178,7 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
               }
             })
 
+            await cancellableDelay(POST_ANIMATION_SETTLE_DELAY, abortController.signal)
             setIsAnimating(false)
           }
         } catch {
@@ -255,7 +207,6 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
     gameState.difficulty,
     gameState.pendingPromotion,
     isAnimating,
-    executeAnimatedMove,
     gameState,
   ])
 
@@ -300,7 +251,7 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
    * Handles clicking on a square
    */
   const handleSquareClick = useCallback(
-    async (row: number, col: number) => {
+    (row: number, col: number) => {
       if (isAnimating || gameState.status !== 'playing' || gameState.pendingPromotion) return
 
       // In PvC mode, only allow player 1 to click
@@ -359,36 +310,23 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
             return
           }
 
-          // Non-promotion move - execute with animation
+          // Non-promotion move: apply it now; the board animates the piece into place.
           const validMove = validMoveToSquare[0]
-          const abortController = new AbortController()
-          animationAbortRef.current = abortController
-          setIsAnimating(true)
           setSelectedPiece(null)
           setHighlightedSquares([])
-
-          try {
-            await executeAnimatedMove(validMove, abortController.signal)
-
-            setGameState(prevState => {
-              try {
-                const nextState = computeNextGameState(prevState, validMove)
-                const undoState = snapshotForUndo(prevState)
-                return {
-                  ...nextState,
-                  undoState: nextState.status !== 'playing' ? null : undoState,
-                }
-              } catch (e) {
-                console.warn('chess: failed to apply player move', e)
-                return prevState
+          setGameState(prevState => {
+            try {
+              const nextState = computeNextGameState(prevState, validMove)
+              const undoState = snapshotForUndo(prevState)
+              return {
+                ...nextState,
+                undoState: nextState.status !== 'playing' ? null : undoState,
               }
-            })
-
-            setIsAnimating(false)
-          } catch (e) {
-            if (e instanceof DOMException && e.name === 'AbortError') return
-            setIsAnimating(false)
-          }
+            } catch (e) {
+              console.warn('chess: failed to apply player move', e)
+              return prevState
+            }
+          })
         } else {
           // Clicked on invalid square, deselect
           setSelectedPiece(null)
@@ -406,7 +344,6 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
       gameState.enPassantSquare,
       selectedPiece,
       isAnimating,
-      executeAnimatedMove,
     ]
   )
 
@@ -460,14 +397,15 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
     cancelAnimations()
     setSelectedPiece(null)
     setHighlightedSquares([])
-    const opponent: 1 | 2 = gameState.currentPlayer === 1 ? 2 : 1
+    // Against a character it is always the human who resigns, even while the character is thinking.
+    const opponent: 1 | 2 = gameState.mode === 'pvc' ? 2 : gameState.currentPlayer === 1 ? 2 : 1
     setGameState(prevState => ({
       ...prevState,
       status: 'won' as const,
       winner: opponent,
       undoState: null,
     }))
-  }, [gameState.status, gameState.currentPlayer, cancelAnimations])
+  }, [gameState.status, gameState.currentPlayer, gameState.mode, cancelAnimations])
 
   const offerDraw = useCallback(() => {
     if (gameState.status !== 'playing') return
@@ -555,14 +493,33 @@ export function useChessGame(initialDifficulty: Difficulty = 'medium') {
     !gameState.pendingPromotion &&
     (gameState.mode === 'pvp' || gameState.currentPlayer === 1)
 
+  const canHint =
+    gameState.status === 'playing' &&
+    gameState.mode === 'pvc' &&
+    gameState.currentPlayer === 1 &&
+    !isAnimating &&
+    !gameState.pendingPromotion
+
+  const requestHint = useCallback(() => {
+    if (!canHint) return
+    const asked = gameState
+    requestAIMove(asked, 1, 'hard', { timeMs: HINT_TIME_MS })
+      .then(move => {
+        if (move) setHint({ state: asked, from: move.from, to: move.to })
+      })
+      .catch(() => {})
+  }, [canHint, gameState])
+
+  const activeHint = hint && hint.state === gameState && canHint ? hint : null
+
   return {
     gameState,
+    hint: activeHint,
+    canHint,
+    requestHint,
     selectedPiece,
     isAnimating,
     highlightedSquares,
-    animatingPiece,
-    capturedPiece,
-    promotedPiece,
     handleSquareClick,
     handlePromotionChoice,
     startNewGame,

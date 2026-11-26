@@ -6,6 +6,8 @@
 import { getAIMove } from '@/lib/aiStrategies'
 import { createAIWorker } from '@/lib/createAIWorker'
 
+const FALLBACK_TIME_MS = 150
+
 type AIArgs = Parameters<typeof getAIMove>
 type AIResult = ReturnType<typeof getAIMove>
 
@@ -22,7 +24,10 @@ const pending = new Map<number, Pending>()
 
 function runSync(p: Pending): void {
   try {
-    p.resolve(getAIMove(...p.args))
+    // No worker: the search blocks the page, so give it a fraction of the usual time.
+    const [state, player, difficulty, options] = p.args
+    const timeMs = Math.min(options?.timeMs ?? FALLBACK_TIME_MS, FALLBACK_TIME_MS)
+    p.resolve(getAIMove(state, player, difficulty, { ...options, timeMs }))
   } catch (e) {
     p.reject(e)
   }
